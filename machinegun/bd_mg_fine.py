@@ -14,7 +14,8 @@ import edit_small as small
 import bd_mg_gun
 import bd_wear
 from bd_fine import Gun, Detail, surface, raster, sides, out_dir
-from bd_mg_settings import VOXEL_M, FINE_LINES, FINE_SCREWS, FINE_STAMPS, FINE_COL, WEAR, SCRATCH_LIGHTEN
+from bd_mg_settings import (VOXEL_M, FINE_LINES, FINE_SCREWS, FINE_STAMPS, FINE_ENGRAVE, FINE_COL, WEAR,
+                            SCRATCH_LIGHTEN)
 from bd_mg_live import PARTS
 
 F = edit.FINE
@@ -71,6 +72,20 @@ def part_detail(part, ob, cells):
                             if q:
                                 dt.build(tuple(q[n] + d[n] for n in range(3)), rgb01(colour))
 
+    for p, side, y, x0, z_top, pattern, dot, colour in FINE_ENGRAVE:  # carved marks
+        if p != part:
+            continue
+        for sign in sides(side):
+            for r, line in enumerate(pattern):
+                for c, ch in enumerate(line):
+                    if ch != '#':
+                        continue
+                    for a in range(dot):
+                        for b in range(dot):
+                            q = surface(s, g, sign, y, x0 + (c * dot + a) / F, z_top - (r * dot + b) / F)
+                            if q:
+                                dt.cut(q, rgb01(colour))
+
     dt.paint_cuts()
     small.tidy(s)
     s.write()
@@ -82,7 +97,7 @@ def run():
     """The fine detail, then scratches on every part (bd_wear.carve, as on the shotgun and pistol)."""
     g = bd_mg_gun.build()
     out = {}
-    for part in {p for p, *_ in FINE_LINES + FINE_SCREWS + FINE_STAMPS}:
+    for part in {p for p, *_ in FINE_LINES + FINE_SCREWS + FINE_STAMPS + FINE_ENGRAVE}:
         out[part] = part_detail(part, bpy.data.objects[PARTS[part]], set(g.p[part]))
     bd_wear.carve([PARTS[k] for k in g.p if k in PARTS and g.p[k]], WEAR, lighten=SCRATCH_LIGHTEN)
     return out

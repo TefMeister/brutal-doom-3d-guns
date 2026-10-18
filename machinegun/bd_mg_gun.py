@@ -7,7 +7,7 @@ import math
 from bd_mg_settings import (ROUND_SLACK, RECEIVER, RAIL, STOCK, STOCK_WINDOW, BUTT, GRIP, GUARD, TRIGGER, MAG,
                             MAG_STRAP, BOX_SIGHT, AMMO_WINDOW, CHARGE, HANDGUARD, SHROUD, SIDE_TUBE, FRONT_BLOCK,
                             BARREL, BRAKE, FRONT_SIGHT, MAG_RELEASE, SIDE_RIB, SIDE_PLATE, SELECTOR, TUBE_CLAMPS,
-                            GRILLE, STOCK_BARS)
+                            GRILLE, STOCK_BARS, FINS, SPIKE, FLASHLIGHT, AMMO_SCREEN)
 from parts import Parts
 
 
@@ -52,8 +52,11 @@ def receiver(g):
     S = BOX_SIGHT                                                        # the box sight and its tunnel
     box(g, 'body', S['x0'], S['x1'], S['y'], S['z0'], S['z1'], 'red', 1)
     g.cut(S['x0'], S['x1'], -S['tunnel_y'], S['tunnel_y'], S['tunnel_z'][0], S['tunnel_z'][1])
-    recolour(g, S['x0'], S['x1'], -S['tunnel_y'] - 1, S['tunnel_y'] + 1, S['tunnel_z'][0] - 1,
-             S['tunnel_z'][1] + 1, 'metal_dark')
+    for y in (-S['tunnel_y'] - 1, S['tunnel_y'] + 1):                    # green dots on the inner walls at the back
+        recolour(g, S['x0'], S['x0'] + S['dot_len'] - 1, y, y, S['dot_z'], S['dot_z'], 'sight_green')
+    for x in S['leds']:                                                  # three green lights on each side
+        recolour(g, x, x, -S['y'], -S['y'], S['led_z'], S['led_z'], 'sight_green')
+        recolour(g, x, x, S['y'], S['y'], S['led_z'], S['led_z'], 'sight_green')
     W = AMMO_WINDOW                                                      # right side: brass rounds behind a frame
     recolour(g, W['x0'] - 1, W['x1'] + 1, -R['y'], -R['y'], W['z0'] - 1, W['z1'] + 1, 'caution')
     g.cut(W['x0'], W['x1'], -R['y'], W['y_in'], W['z0'], W['z1'])
@@ -177,7 +180,7 @@ def front(g):
                 g.put('body', K['x0'] - 1, y, z, 'bore')
     P = FRONT_SIGHT                                                      # the post, between protective ears
     g.fill('body', P['x0'], P['x1'], -P['y'], P['y'], F['z1'] + 1, P['z1'], 'metal')
-    g.put('body', P['x0'], 0, P['z1'], 'sight_dot')
+    g.put('body', P['x0'], 0, P['z1'], 'sight_green')
     for sign in (-1, 1):
         g.fill('body', P['ears_x'][0], P['ears_x'][1], sign * P['ears_y'], sign * P['ears_y'], F['z1'] + 1,
                P['ears_z1'], 'metal')
@@ -210,6 +213,25 @@ def side_kit(g):
         B = STOCK_BARS
         for z in B['z']:
             g.fill('body', B['x0'], B['x1'], sign * B['y'], sign * B['y'], z, z, 'metal_hi')
+    extras(g)
+
+
+def extras(g):
+    """Going overboard: cooling fins, a blade under the barrel, a flashlight, the ammo counter's screen."""
+    B, N = BARREL, FINS
+    for x in N['x']:
+        g.tube('body', x, x, B['zc'], N['r'], 'metal_hi', keep=False)
+    K = SPIKE
+    for x in range(K['x0'], K['x1'] + 1):
+        bottom = K['z_bot'] + round((x - K['x0']) * (K['z_top'] - K['z_bot']) / (K['x1'] - K['x0']))
+        for z in range(bottom, K['z_top'] + 1):
+            g.fill('body', x, x, -K['y'], K['y'], z, z, 'blade_edge' if z == bottom else 'metal_mid')
+    L = FLASHLIGHT
+    g.tube('body', L['x0'], L['x1'], L['zc'], L['r'], 'metal')
+    g.tube('body', L['x1'], L['x1'], L['zc'], L['r'] - 1, 'lens')
+    S, y = AMMO_SCREEN, RECEIVER['y']                                    # a dark screen set into the left side
+    g.cut(S['x0'], S['x1'], y, y, S['z0'], S['z1'])
+    recolour(g, S['x0'], S['x1'], y - 1, y - 1, S['z0'], S['z1'], 'screen')
 
 
 def build():
