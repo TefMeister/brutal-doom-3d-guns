@@ -6,7 +6,8 @@ import math
 
 from bd_mg_settings import (ROUND_SLACK, RECEIVER, RAIL, STOCK, STOCK_WINDOW, BUTT, GRIP, GUARD, TRIGGER, MAG,
                             MAG_STRAP, BOX_SIGHT, AMMO_WINDOW, CHARGE, HANDGUARD, SHROUD, SIDE_TUBE, FRONT_BLOCK,
-                            BARREL, BRAKE, FRONT_SIGHT)
+                            BARREL, BRAKE, FRONT_SIGHT, MAG_RELEASE, SIDE_RIB, SIDE_PLATE, SELECTOR, TUBE_CLAMPS,
+                            GRILLE, STOCK_BARS)
 from parts import Parts
 
 
@@ -112,19 +113,24 @@ def grip(g):
 
 def mag(g):
     M, S = MAG, MAG_STRAP
+
+    def ahead(z):                                                        # the box leans forward at the bottom
+        return round((M['z1'] - z) * M['lean'] / (M['z1'] - M['z0']))
     for z in range(M['z0'], M['z1'] + 1):
-        lean = round((z - M['z0']) * M['lean'] / (M['z1'] - M['z0']))   # the box leans back at the bottom
-        for x in range(M['x0'] - M['lean'] + lean, M['x1'] - M['lean'] + lean + 1):
+        for x in range(M['x0'] + ahead(z), M['x1'] + ahead(z) + 1):
             for y in range(-M['y'], M['y'] + 1):
                 if (M['y'] - abs(y)) + min(z - M['z0'], M['z1'] - z) < M['bevel']:
                     continue
                 g.put('mag', x, y, z, 'metal')
     for sign in (-1, 1):                                                 # the carry strap, a raised loop
         y = sign * S['y']
-        g.fill('mag', S['x0'], S['x1'], y, y, S['z0'], S['z0'] + 1, 'panel')
-        g.fill('mag', S['x0'], S['x1'], y, y, S['z1'] - 1, S['z1'], 'panel')
-        g.fill('mag', S['x0'], S['x0'] + 1, y, y, S['z0'], S['z1'], 'panel')
-        g.fill('mag', S['x1'] - 1, S['x1'], y, y, S['z0'], S['z1'], 'panel')
+        for z in range(S['z0'], S['z1'] + 1):
+            x0, x1 = S['x0'] + ahead(z), S['x1'] + ahead(z)
+            if z - S['z0'] < 2 or S['z1'] - z < 2:
+                g.fill('mag', x0, x1, y, y, z, z, 'panel')
+            else:
+                g.fill('mag', x0, x0 + 1, y, y, z, z, 'panel')
+                g.fill('mag', x1 - 1, x1, y, y, z, z, 'panel')
 
 
 def front(g):
@@ -178,6 +184,33 @@ def front(g):
 
 
 
+def side_kit(g):
+    """The combat shotgun's side clutter: rib, plate, selector, release, tube clamps, grille, stock bars."""
+    for sign in (-1, 1):
+        R = SIDE_RIB
+        g.fill('body', R['x0'], R['x1'], sign * R['y'], sign * R['y'], R['z0'], R['z1'], 'metal_hi')
+        P = SIDE_PLATE
+        for z in range(P['z0'], P['z1'] + 1):
+            g.fill('body', P['x0'], P['x1'] - (z - P['z0']), sign * P['y'], sign * P['y'], z, z, 'panel_dark')
+        S = SELECTOR
+        g.fill('body', S['knob_x'][0], S['knob_x'][1], sign * S['y'], sign * S['y'], S['knob_z'][0], S['knob_z'][1],
+               'metal_hi')
+        g.fill('body', S['arm_x'][0], S['arm_x'][1], sign * (S['y'] + 1), sign * (S['y'] + 1), S['arm_z'], S['arm_z'],
+               'metal_hi')
+        M = MAG_RELEASE
+        g.fill('body', M['x0'], M['x1'], sign * M['y'], sign * M['y'], M['z0'], M['z1'], 'metal_hi')
+        T, C = SIDE_TUBE, TUBE_CLAMPS
+        for x in C['x']:
+            g.tube('body', x, x + C['width'] - 1, T['zc'], C['r'], 'metal', keep=False, yc=sign * T['y'])
+        G, F = GRILLE, FRONT_BLOCK                                       # a recess with four bars standing in it
+        g.cut(G['x0'], G['x1'], sign * F['y'], sign * F['y'], G['z0'], G['z1'])
+        recolour(g, G['x0'], G['x1'], sign * (F['y'] - 1), sign * (F['y'] - 1), G['z0'], G['z1'], 'port')
+        for x in G['bars']:
+            g.fill('body', x, x, sign * F['y'], sign * F['y'], G['z0'] + 1, G['z1'] - 1, 'metal_hi')
+        B = STOCK_BARS
+        for z in B['z']:
+            g.fill('body', B['x0'], B['x1'], sign * B['y'], sign * B['y'], z, z, 'metal_hi')
+
 
 def build():
     g = Parts()
@@ -186,4 +219,5 @@ def build():
     grip(g)
     mag(g)
     front(g)
+    side_kit(g)
     return g

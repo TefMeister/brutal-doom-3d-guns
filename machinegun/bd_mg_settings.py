@@ -30,8 +30,11 @@ GRIP = dict(z0=-30, z1=-1, front=78, back=64, rake=0.3, y=5, ridge_step=3, ridge
 GUARD = dict(x1=100, z_bottom=-12, y=2, lean=3)
 TRIGGER = [(85, -1), (84, -2), (84, -3), (84, -4), (85, -5), (85, -6), (86, -7)]
 # ---- the box magazine under the receiver, with a carry strap on each side ----
-MAG = dict(x0=102, x1=132, y=8, z0=-34, z1=-1, lean=3, bevel=1)
-MAG_STRAP = dict(x0=108, x1=126, z0=-26, z1=-6, y=9)
+# Tefa: "the mag needs to be more forward and angled forwards not backwards": its bottom sits `lean` cubes ahead of
+# its top, the strap leaning with it.
+MAG = dict(x0=124, x1=152, y=8, z0=-34, z1=-1, lean=6, bevel=1)
+MAG_STRAP = dict(x0=130, x1=146, z0=-26, z1=-6, y=9)
+MAG_RELEASE = dict(x0=118, x1=120, z0=4, z1=6, y=8)                   # the release button just behind it
 # ---- the box sight on top: look through its tunnel at the front post (for VR aiming) ----
 BOX_SIGHT = dict(x0=96, x1=124, y=5, z0=29, z1=38, tunnel_y=2, tunnel_z=(33, 36))
 # ---- the ammo window on the right side, brass rounds showing through, framed in caution yellow ----
@@ -44,6 +47,15 @@ SIDE_TUBE = dict(x0=168, x1=238, y=7, zc=17, r=1.7)                   # a tube a
 FRONT_BLOCK = dict(x0=240, x1=262, y=7, z0=4, z1=28, bevel=2, slashes=(246, 250, 254), slash_z=(18, 23), lean=2)
 BARREL = dict(x0=160, x1=288, zc=18, r=3.0)
 BRAKE = dict(x0=289, x1=306, y=5, z0=13, z1=23, bevel=2, slots=((292, 294), (298, 300)), slot_z=(15, 21), bore=2.0)
+# ---- side kit, after the DOOM (2016) combat shotgun (Tefa: "take inspiration from this gun to decorate the sides with
+# all sorts of weapon-y cool looking stuff"): a raised rib along the bottom of the receiver, an angled side plate, a
+# selector lever, clamps round the side tubes, a four-bar grille on the front block, three bars on the stock ----
+SIDE_RIB = dict(x0=58, x1=163, z0=2, z1=3, y=8)
+SIDE_PLATE = dict(x0=64, x1=92, z0=8, z1=16, y=8)                     # its front edge slopes back as it rises
+SELECTOR = dict(knob_x=(66, 67), knob_z=(17, 19), arm_x=(68, 71), arm_z=18, y=8)
+TUBE_CLAMPS = dict(x=(182, 206, 230), width=2, r=2.5)
+GRILLE = dict(x0=245, x1=254, z0=6, z1=13, bars=(246, 248, 250, 252))
+STOCK_BARS = dict(x0=4, x1=14, z=(20, 22, 24), y=7)
 FRONT_SIGHT = dict(x0=252, x1=253, y=1, z1=34, ears_y=4, ears_z1=33, ears_x=(251, 254))   # its top in the middle of
                                                                                      # BOX_SIGHT's tunnel
 
@@ -55,15 +67,23 @@ FINE_LINES = [   # cut one small cube deep: (part, side, y, [(x, z) corners, joi
     ('body', 'both', 6, [(168, 24.5), (238, 24.5)]),
 ]
 FINE_SCREWS = [  # raised screw heads with a slot: (part, side, y, [(x, z) centres])
-    ('body', 'both', 7, [(60, 3), (60, 19), (162, 3), (162, 19)]),
+    ('body', 'both', 7, [(60, 5), (60, 19), (162, 5), (162, 19)]),
+    ('body', 'both', 8, [(66, 9.5), (66, 15)]),                           # the side plate's back corners
     ('body', 'both', 7, [(243, 7), (243, 25), (259, 7), (259, 25)]),
-    ('mag', 'both', 8, [(105, -4), (129, -4)]),
+    ('mag', 'both', 8, [(127, -4), (149, -4)]),
 ]
+UAC = ("#.#..#..###", "#.#.#.#.#..", "#.#.###.#..", "#.#.#.#.#..", "###.#.#.###")   # 5 rows, '#' = a dot
 FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
     ('body', 'both', 6, 228, 27, ("#....", "###..", "#####", "###..", "#...."), 2, 'red'),    # the black MG's
     ('body', 'both', 7, 82, 20, ("#.#.#.#.#.#", ".#.#.#.#.#."), 2, 'caution'),               # red markers; hazard
+    ('body', 'right', 6, 70, 27, UAC, 2, 'white'),                                         # "UAC", read the
+    ('body', 'left', 6, 70, 27, tuple(row[::-1] for row in UAC), 2, 'white'),              # right way each side
+    ('body', 'both', 7, 96, 18, ("#######", "##...##", "#.#.#.#", "#..#..#", "#.#.#.#", "##...##", "#######"), 2,
+     'white'),                                                                             # the boxed X
+    ('body', 'both', 6, 128, 27, ("#####", ".###.", "..#.."), 2, 'white'),                 # two triangles
+    ('body', 'both', 6, 131, 27, ("#####", ".###.", "..#.."), 2, 'white'),
 ]
-FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36))
+FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36), white=(200, 200, 194))
 
 WEAR = dict(seed=1066, scratch_per_cm2=0.04, scratch_mm=(8.0, 32.0), along_share=0.75, gouge_share=0.1,
             zigzag_share=0.35)
