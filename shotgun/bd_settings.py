@@ -29,6 +29,22 @@ BUTT_PAD = 3                                            # black rubber pad on th
 GRAIN_STEP = 5                                          # a grain line every this many cubes up the stock
 GRAIN_WAVE = (2.0, 9.0)                                 # how far a grain line wanders, and over how many cubes
 
+# ---- the metal and the pump, in cubes (2026-10-18, Tefa: "more square tones ... make the tip of the muzzle round but
+# the barrel leading up to it bulky and square") ----
+RECEIVER = dict(x0=0, x1=96, y=6, z0=-8, z1=18, bevel=1)      # ~33 cm long, ~9 cm tall, ~4 cm wide
+PORT = dict(x0=30, x1=54, z0=8, z1=14)                        # ejection port, on the right side (as in the Ashes gun)
+BARREL = dict(x0=96, x1=204, y=4, z0=10, z1=18)               # square and bulky, ~37 cm
+MUZZLE = dict(x0=205, x1=214, zc=14, r=4.6, bore=2.0)         # the round tip
+RIB = dict(z=19, y=1, notch_step=6)                           # the vent rib along the barrel's top
+SIGHT = dict(x0=209, x1=211, z1=21)                           # front sight blade
+MAGTUBE = dict(x0=96, x1=184, y=4, z0=0, z1=8)                # square magazine tube under the barrel
+MAGCAP = dict(x0=185, x1=191, y=5, z0=-1, z1=9)
+CLAMP = dict(x0=176, x1=182, y=5, z0=-1, z1=19)               # band holding barrel and magazine together
+PUMP = dict(x0=118, x1=168, y=7, z0=-5, z1=10, groove_step=3, end_bevel=2)   # beefy square dark-oak fore-end
+ACTION_BARS = dict(y=5, z=3)                                  # from the pump back into the receiver
+GUARD = dict(x0=12, x1=40, z_bottom=-17, y=1)                 # square trigger guard
+TRIGGER = [(26, -9), (26, -10), (25, -11), (25, -12), (26, -13)]
+
 # ---- colours, sRGB 0-255 ----
 # Tefa, 2026-10-18: nearly black metal, DARK OAK wood, "almost unrealistically beefy, dangerous and cool".
 COL = dict(
@@ -37,7 +53,14 @@ COL = dict(
     wood_grain=(40, 25, 15),
     wood_dark=(36, 23, 14),      # lower stock
     butt_pad=(18, 18, 19),
+    metal=(26, 26, 28),          # nearly black
+    metal_hi=(52, 53, 57),       # worn edges
+    metal_dark=(14, 14, 15),
+    bore=(4, 4, 4),
+    port=(9, 9, 10),
+    sight=(150, 140, 110),
 )
+EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
 
 # per-face shade painted into the colour (not lighting), the same as the Ashes guns
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.55, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
