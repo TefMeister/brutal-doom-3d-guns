@@ -72,13 +72,13 @@ COL = dict(
     # The cuff, bluer than the plates (Tefa, 2026-10-18: "a bit bluer green please", "sorry i meant only the cuff
     # bit", then "just a bit bluer and colour the rest of the brown like that too"): the under-glove, brown until
     # then, takes the cuff's colour as well. Then: "that looks wrong, can you make it even darker green, than the top
-    # plate?" -> both a dark green, darker than the plates.
-    cuff=(30, 42, 26),
-    cuff_dark=(18, 26, 16),
-    cuff_hi=(44, 60, 38),
-    under=(30, 42, 26),             # the under-glove, the cuff's colour
-    under_dark=(18, 26, 16),        # creases at the joints, the palm's lines, the cuff's lining
-    under_hi=(42, 58, 36),          # worn ridges (knuckles)
+    # plate?" -> both a dark green, darker than the plates; then "even darker by 60%" -> 40% of that.
+    cuff=(12, 17, 10),
+    cuff_dark=(7, 10, 6),
+    cuff_hi=(18, 24, 15),
+    under=(12, 17, 10),             # the under-glove, the cuff's colour
+    under_dark=(7, 10, 6),          # creases at the joints, the palm's lines, the cuff's lining
+    under_hi=(17, 23, 14),          # worn ridges (knuckles)
 )
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.62, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.78, (-1, 0, 0): 0.78}
