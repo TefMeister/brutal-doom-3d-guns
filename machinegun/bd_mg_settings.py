@@ -22,21 +22,26 @@ PIVOT = (71, 0.5, 0)              # the top of the pistol grip, where the right 
 RECEIVER = dict(x0=56, x1=165, y=7, z0=0, z1=28, bevel=2, upper_z=22, upper_y=6)
 RAIL = dict(x0=60, x1=162, y=3, z0=29, z1=30, slot_step=4)           # a rail along the top, slotted
 # ---- the stock: in line with the receiver, its underside dropping to the butt, a skeleton window with two rods ----
-STOCK = dict(x0=0, x1=55, y=6, top=26, bottom=[(0, -8), (40, 3), (55, 3)], bevel=1)
+# Tefa: "stock and mag need to be slimmer, grip as well".
+STOCK = dict(x0=0, x1=55, y=4, top=26, bottom=[(0, -8), (40, 3), (55, 3)], bevel=1)
 STOCK_WINDOW = dict(x0=14, x1=42, z0=6, z1=18, rods=(9, 15), rod_r=1.2)
-BUTT = dict(x1=1, y=7)                                                # the rubber butt plate
+BUTT = dict(x1=1, y=5)                                                # the rubber butt plate
 # ---- pistol grip, raked back, ridged sides ----
-GRIP = dict(z0=-30, z1=-1, front=78, back=64, rake=0.3, y=5, ridge_step=3, ridge_inset=2)
+GRIP = dict(z0=-30, z1=-1, front=78, back=64, rake=0.3, y=4, ridge_step=3, ridge_inset=2)
 GUARD = dict(x1=100, z_bottom=-12, y=2, lean=3)
 TRIGGER = [(85, -1), (84, -2), (84, -3), (84, -4), (85, -5), (85, -6), (86, -7)]
 # ---- the box magazine under the receiver, with a carry strap on each side ----
 # Tefa: "the mag needs to be more forward and angled forwards not backwards": its bottom sits `lean` cubes ahead of
 # its top, the strap leaning with it.
-MAG = dict(x0=124, x1=152, y=8, z0=-34, z1=-1, lean=6, bevel=1)
-MAG_STRAP = dict(x0=130, x1=146, z0=-26, z1=-6, y=9)
+MAG = dict(x0=124, x1=152, y=5, z0=-34, z1=-1, lean=6, bevel=1)
+MAG_STRAP = dict(x0=130, x1=146, z0=-26, z1=-6, y=6)
 MAG_RELEASE = dict(x0=118, x1=120, z0=4, z1=6, y=8)                   # the release button just behind it
 # ---- the box sight on top: look through its tunnel at the front post (for VR aiming) ----
-BOX_SIGHT = dict(x0=96, x1=124, y=5, z0=29, z1=38, tunnel_y=2, tunnel_z=(33, 36))
+# Tefa: "remove the black box inside the scope and place green sights in there to line up the front one": a green
+# dot on each inner wall at the back, at the height of the front post's (now green) dot, and three green lights on
+# each side of the box.
+BOX_SIGHT = dict(x0=96, x1=124, y=5, z0=29, z1=38, tunnel_y=2, tunnel_z=(33, 36), dot_z=34, dot_len=2,
+                 leds=(100, 103, 106), led_z=31)
 # ---- the ammo window on the right side, brass rounds showing through, framed in caution yellow ----
 AMMO_WINDOW = dict(x0=130, x1=152, z0=10, z1=22, y_in=-4, rounds=range(132, 151, 3), round_w=2, round_z=(12, 20))
 CHARGE = dict(x0=139, x1=142, z0=22, z1=25, y0=8, y1=10)             # the charging handle on the left side
@@ -55,7 +60,13 @@ SIDE_PLATE = dict(x0=64, x1=92, z0=8, z1=16, y=8)                     # its fron
 SELECTOR = dict(knob_x=(66, 67), knob_z=(17, 19), arm_x=(68, 71), arm_z=18, y=8)
 TUBE_CLAMPS = dict(x=(182, 206, 230), width=2, r=2.5)
 GRILLE = dict(x0=245, x1=254, z0=6, z1=13, bars=(246, 248, 250, 252))
-STOCK_BARS = dict(x0=4, x1=14, z=(20, 22, 24), y=7)
+STOCK_BARS = dict(x0=4, x1=14, z=(20, 22, 24), y=5)
+# ---- Tefa: "you can go overboard with the customization and adding and carving things" ----
+FINS = dict(x=(266, 271, 276, 281), r=4.5)                            # cooling fins round the bare barrel
+SPIKE = dict(x0=262, x1=286, z_top=11, z_bot=5, y=1)                  # a blade under the barrel, its edge rising
+                                                                      # to the point
+FLASHLIGHT = dict(x0=214, x1=236, zc=-3, r=2.5)                       # under the handguard, its lens at the front
+AMMO_SCREEN = dict(x0=132, x1=148, z0=10, z1=20)                      # left side, opposite the ammo window
 FRONT_SIGHT = dict(x0=252, x1=253, y=1, z1=34, ears_y=4, ears_z1=33, ears_x=(251, 254))   # its top in the middle of
                                                                                      # BOX_SIGHT's tunnel
 
@@ -70,8 +81,11 @@ FINE_SCREWS = [  # raised screw heads with a slot: (part, side, y, [(x, z) centr
     ('body', 'both', 7, [(60, 5), (60, 19), (162, 5), (162, 19)]),
     ('body', 'both', 8, [(66, 9.5), (66, 15)]),                           # the side plate's back corners
     ('body', 'both', 7, [(243, 7), (243, 25), (259, 7), (259, 25)]),
-    ('mag', 'both', 8, [(127, -4), (149, -4)]),
+    ('mag', 'both', 5, [(127, -4), (149, -4)]),
 ]
+DIGITS_60 = ("###.###", "#...#.#", "###.#.#", "#.#.#.#", "###.###")   # the ammo counter's "60"
+SKULL = ("..#######..", ".#########.", "###########", "##...#...##", "##...#...##", "###########",
+         "#####.#####", ".#########.", "..#.#.#.#..", "..#######..", "...#.#.#...")
 UAC = ("#.#..#..###", "#.#.#.#.#..", "#.#.###.#..", "#.#.#.#.#..", "###.#.#.###")   # 5 rows, '#' = a dot
 FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
     ('body', 'both', 6, 228, 27, ("#....", "###..", "#####", "###..", "#...."), 2, 'red'),    # the black MG's
@@ -80,10 +94,18 @@ FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
     ('body', 'left', 6, 70, 27, tuple(row[::-1] for row in UAC), 2, 'white'),              # right way each side
     ('body', 'both', 7, 96, 18, ("#######", "##...##", "#.#.#.#", "#..#..#", "#.#.#.#", "##...##", "#######"), 2,
      'white'),                                                                             # the boxed X
+    ('body', 'left', 6, 137, 17.5, tuple(row[::-1] for row in DIGITS_60), 4, 'green'),     # the ammo counter
     ('body', 'both', 6, 128, 27, ("#####", ".###.", "..#.."), 2, 'white'),                 # two triangles
     ('body', 'both', 6, 131, 27, ("#####", ".###.", "..#.."), 2, 'white'),
 ]
-FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36), white=(200, 200, 194))
+FINE_ENGRAVE = [  # carved marks, the stamps' way but cut in: (part, side, y, x, z_top, pattern, dot, colour)
+    ('body', 'both', 4, 20, 24.4, SKULL, 2, 'carve'),                                     # a skull in the stock
+]
+TALLY = [[(x, 9.5), (x, 13.5)] for x in (70, 71, 72, 73, 76, 77, 78, 79)] + [[(69, 9.5), (74.5, 13.5)],
+                                                                             [(75, 9.5), (80.5, 13.5)]]
+FINE_LINES += [('body', 'both', 8, pts) for pts in TALLY]               # kill tallies scratched into the side plate
+FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36), white=(200, 200, 194),
+                green=(70, 230, 90), carve=(30, 8, 7))
 
 WEAR = dict(seed=1066, scratch_per_cm2=0.04, scratch_mm=(8.0, 32.0), along_share=0.75, gouge_share=0.1,
             zigzag_share=0.35)
@@ -104,6 +126,10 @@ COL = dict(
     brass_hi=(206, 166, 86),
     caution=(196, 150, 36),
     sight_dot=(235, 235, 228),
+    sight_green=(60, 235, 80),
+    screen=(8, 16, 10),
+    lens=(214, 226, 200),
+    blade_edge=(120, 124, 130),
     red=(104, 30, 28),            # the picture's dark red paint
     red_hi=(138, 52, 46),         # its worn edges
     red_dark=(72, 20, 18),
