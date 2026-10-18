@@ -1,17 +1,26 @@
 # The Brutal Doom cube pistol's shape, split into parts: {part: {(x, y, z): colour name}}. No Blender here.
-# Parts: 'frame' (frame, grip, guard - never moves), 'slide' (slide and its levers - runs back on a shot),
-# 'barrel', 'trigger', 'hammer', 'mag'.
-from bd_pistol_settings import (GRIP, GRIP_PANEL, MAG_BASE, FRAME, GUARD, TRIGGER, SLIDE_CATCH, TAKEDOWN, SLIDE,
-                                OPEN_TOP, SERRATIONS, REAR_SIGHT, FRONT_SIGHT, SAFETY, BARREL, HAMMER)
+# The DOOM (2016) pistol's shape (Tefa, 2026-10-18), without its glow and without a hammer.
+# Parts: 'frame' (frame, grip, guard, ring module, tang - never moves), 'slide' (slide and sights - runs back on a
+# shot), 'barrel', 'trigger', 'mag'.
+import math
+
+from bd_pistol_settings import (GRIP, GRIP_TEXTURE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER, MODULE, RING, RAIL, SLIDE,
+                                DECK, REAR_SLOPE, WINDOW, SERRATIONS, REAR_SIGHT, FRONT_SIGHT, BARREL, MUZZLE)
 from parts import Parts
 
 
+def bulge(z, size):
+    """How far the grip bulges at height z: nothing at the ends, `size` cubes in the middle."""
+    t = (z - GRIP['z0']) / float(GRIP['z1'] - GRIP['z0'])
+    return round(size * math.sin(math.pi * t))
+
+
 def grip_front(z):
-    return round(GRIP['front'] - (GRIP['z1'] - z) * GRIP['rake'])
+    return round(GRIP['front'] - (GRIP['z1'] - z) * GRIP['rake']) + bulge(z, GRIP['belly'])
 
 
 def grip_back(z):
-    return round(GRIP['back'] - (GRIP['z1'] - z) * GRIP['rake'])
+    return round(GRIP['back'] - (GRIP['z1'] - z) * GRIP['rake']) - bulge(z, GRIP['swell'])
 
 
 def box(g, part, x0, x1, y, z0, z1, c, bevel=0):
@@ -24,71 +33,111 @@ def box(g, part, x0, x1, y, z0, z1, c, bevel=0):
                 g.put(part, x, yy, z, c)
 
 
+def recolour(g, x0, x1, y0, y1, z0, z1, c):
+    """Repaint the cubes already there, adding none."""
+    for x in range(x0, x1 + 1):
+        for y in range(y0, y1 + 1):
+            for z in range(z0, z1 + 1):
+                for part in g.p.values():
+                    if (x, y, z) in part:
+                        part[(x, y, z)] = c
+
+
 def grip(g):
-    G, P = GRIP, GRIP_PANEL
+    G, T = GRIP, GRIP_TEXTURE
     for z in range(G['z0'], G['z1'] + 1):
         f, b = grip_front(z), grip_back(z)
         for x in range(b, f + 1):
             for y in range(-G['y'], G['y'] + 1):
-                edge_x = x in (b, f)
-                if edge_x and abs(y) == G['y']:
+                if x in (b, f) and abs(y) == G['y']:
                     continue                                             # rounded corners
-                c = 'metal'
-                in_panel = b + P['inset'] <= x <= f - P['inset'] and P['z0'] <= z <= P['z1']
-                if abs(y) == G['y'] and in_panel:
-                    c = 'grip_check' if (x + z) % P['check'] == 0 else 'grip'
+                c = 'grip'
+                if abs(y) == G['y'] and b + T['inset'] <= x <= f - T['inset'] and T['z0'] <= z <= T['z1']:
+                    c = 'grip_check' if (x // 1 + z) % 2 == 0 and z % 2 == 0 else 'grip'   # stippled rubber
                 g.put('frame', x, y, z, c)
-    M = MAG_BASE
+    M = MAG_BASE                                                         # flared base plate
     for z in range(M['z0'], M['z1'] + 1):
-        g.fill('mag', grip_back(G['z0']) - M['over'], grip_front(G['z0']) + M['over'], -G['y'], G['y'], z, z,
-               'metal_dark')
+        g.fill('mag', grip_back(G['z0']) - M['over'], grip_front(G['z0']) + M['over'], -M['y'], M['y'], z, z,
+               'metal_dark' if z < M['z1'] else 'metal')
+    T = TANG                                                             # the tang over the web of the hand
+    for x in range(T['x0'], grip_back(G['z1']) + 1):
+        droop = round((grip_back(G['z1']) - x) * T['droop'])
+        g.fill('frame', x, x, -T['y'], T['y'], T['z0'] - droop, T['z1'] - droop, 'metal')
 
 
 def frame(g):
     F = FRAME
     box(g, 'frame', F['x0'], F['x1'], F['y'], F['z0'], F['z1'], 'metal', 1)
     G = GUARD
+    top = F['z0'] - 1
     front = grip_front(G['z_bottom'] + 1)
-    g.fill('frame', front, G['x1'], -G['y'], G['y'], G['z_bottom'], G['z_bottom'] + 1, 'metal')      # bottom bar
-    g.fill('frame', G['x1'] - 1, G['x1'], -G['y'], G['y'], G['z_bottom'], F['z0'] - 1, 'metal')      # squared front
-    g.fill('frame', G['x1'] + 1, G['x1'] + G['hook'], -G['y'], G['y'], G['z_bottom'], G['z_bottom'] + 1,
-           'metal')                                                                                   # the hook
+    g.fill('frame', front, G['x1'], -G['y'], G['y'], G['z_bottom'], G['z_bottom'] + 1, 'metal')     # bottom bar
+    for z in range(G['z_bottom'], top + 1):                                                         # front post
+        x = G['x1'] - round((top - z) * G['lean'] / (top - G['z_bottom']))
+        g.fill('frame', x - 1, x, -G['y'], G['y'], z, z, 'metal')
     for x, z in TRIGGER:
         g.fill('trigger', x, x, -1, 1, z, z, 'metal_hi')
-    S, T = SLIDE_CATCH, TAKEDOWN
-    g.fill('frame', S['x0'], S['x1'], F['y'] + 1, F['y'] + 1, S['z'], S['z'], 'metal_hi')
-    g.fill('frame', T['x0'], T['x1'], F['y'] + 1, F['y'] + 1, T['z'], T['z'], 'metal_hi')
+    M = MODULE                                                           # the box under the front
+    for z in range(M['z0'], M['z1'] + 1):
+        back = round((M['z1'] - z) * M['lean'] / max(1, M['z1'] - M['z0']))
+        for x in range(M['x0'], M['x1'] - back + 1):
+            for y in range(-M['y'], M['y'] + 1):
+                if (M['y'] - abs(y)) + min(z - M['z0'], x - M['x0']) < M['bevel']:
+                    continue
+                g.put('frame', x, y, z, 'metal')
+    R = RING                                                             # the coil on each side, plain metal
+    for x in range(math.floor(R['x'] - R['r_out']), math.ceil(R['x'] + R['r_out']) + 1):
+        for z in range(math.floor(R['z'] - R['r_out']), math.ceil(R['z'] + R['r_out']) + 1):
+            d2 = (x - R['x']) ** 2 + (z - R['z']) ** 2
+            for sign in (-1, 1):
+                if d2 <= R['r_out'] ** 2 and d2 >= R['r_in'] ** 2:
+                    g.put('frame', x, sign * R['y'], z, 'metal_hi')
+                elif d2 < R['r_in'] ** 2:
+                    g.cut(x, x, sign * M['y'], sign * M['y'], z, z)
+                    g.put('frame', x, sign * (M['y'] - 1), z, 'port')     # dark inside: where it glowed
+    L = RAIL
+    for x in L['slots']:
+        g.cut(x, x + 1, -2, 2, L['z'], L['z'])
 
 
 def slide(g):
-    S, O = SLIDE, OPEN_TOP
+    S, D = SLIDE, DECK
     box(g, 'slide', S['x0'], S['x1'], S['y'], S['z0'], S['z1'], 'metal', S['bevel'])
-    g.cut(O['x0'], O['x1'], -O['y'], O['y'], O['z0'], S['z1'])                       # the open top
-    g.cut(O['dip_x0'], O['dip_x1'], -S['y'], S['y'], O['dip_z0'], S['z1'])           # its sides dipping lower
-    R = SERRATIONS
-    for x in range(R['x0'], R['x1'] + 1, R['step']):
-        g.cut(x, x, -S['y'], -S['y'], R['z0'], R['z1'])
-        g.cut(x, x, S['y'], S['y'], R['z0'], R['z1'])
+    for y in (-S['y'], S['y']):                                          # the narrower upper deck
+        g.cut(S['x0'], D['x1'], y, y, D['z0'], S['z1'])
+    recolour(g, S['x0'], D['x1'], -D['y'], D['y'], D['z0'], S['z1'], 'metal_mid')
+    R = REAR_SLOPE                                                       # the back end sloping down
+    for x in range(S['x0'], R['x1'] + 1):
+        drop = round((R['x1'] - x) * R['drop'] / max(1, R['x1'] - S['x0']))
+        if drop:
+            g.cut(x, x, -S['y'], S['y'], S['z1'] - drop + 1, S['z1'])
+    W = WINDOW
+    g.cut(W['x0'], W['x1'], -W['y'], W['y'], W['z0'], S['z1'])
+    recolour(g, W['x0'] - 1, W['x0'] - 1, -W['y'], W['y'], W['z0'], S['z1'], 'port')
+    E = SERRATIONS
+    for x in range(E['x0'], E['x1'] + 1, E['step']):
+        g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])
+        g.cut(x, x, S['y'], S['y'], E['z0'], E['z1'])
     R = REAR_SIGHT
     g.fill('slide', R['x0'], R['x1'], -R['y'], R['y'], S['z1'] + 1, R['z1'], 'metal')
-    g.cut(R['x0'], R['x1'], -R['notch'], R['notch'], R['z1'], R['z1'])               # the notch
+    g.cut(R['x0'], R['x1'], -R['notch'], R['notch'], R['z1'], R['z1'])
     for y in (-R['y'] + 1, R['y'] - 1):
         g.put('slide', R['x1'], y, R['z1'] - 1, 'sight_dot')
     F = FRONT_SIGHT
     g.fill('slide', F['x0'], F['x1'], 0, 0, S['z1'] + 1, F['z1'], 'metal')
     g.put('slide', F['x0'], 0, F['z1'], 'sight_dot')
-    A = SAFETY
-    g.fill('slide', A['x0'], A['x1'], -S['y'] - 1, -S['y'] - 1, A['z0'], A['z1'], 'metal_hi')
-    g.fill('slide', A['x0'], A['x1'], S['y'] + 1, S['y'] + 1, A['z0'], A['z1'], 'metal_hi')
-    B = BARREL
-    g.tube('barrel', B['x0'], B['x1'], B['zc'], B['r'], 'barrel')
-    g.tube('barrel', B['x1'] - 1, B['x1'], B['zc'], B['bore'], 'bore')
-
-
-def hammer(g):
-    H = HAMMER
-    g.fill('hammer', H['x0'], H['x1'], -H['y'], H['y'], H['z0'], H['z1'], 'metal_hi')
-    g.cut(H['x0'], H['x0'], -H['y'], H['y'], H['z1'], H['z1'])                       # rounded spur
+    B = BARREL                                                           # copper, seen through the window
+    g.tube('barrel', B['x0'], B['x1'], B['zc'], B['r'], 'copper')
+    for x in range(W['x0'], W['x1'] + 1):
+        g.put('barrel', x, 0, round(B['zc'] + B['r']), 'copper_hi')
+    M = MUZZLE
+    g.tube('barrel', M['x0'], M['x1'], B['zc'], M['r'], 'metal_hi')
+    ri = math.ceil(M['bore'])
+    for y in range(-ri, ri + 1):
+        for z in range(math.floor(B['zc'] - M['bore']), math.ceil(B['zc'] + M['bore']) + 1):
+            if y * y + (z - B['zc']) ** 2 <= M['bore'] ** 2 + 0.3:
+                g.cut(S['x1'] - 4, M['x1'], y, y, z, z)
+                g.put('barrel', S['x1'] - 5, y, z, 'bore')
 
 
 def build():
@@ -96,5 +145,4 @@ def build():
     grip(g)
     frame(g)
     slide(g)
-    hammer(g)
     return g
