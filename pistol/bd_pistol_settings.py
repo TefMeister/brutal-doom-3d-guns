@@ -61,22 +61,25 @@ BARREL = dict(x0=8, x1=64, zc=41, r=4.0)           # copper, under the windows; 
 # The compensator: a heavy block on the nose, ports cut into its top and sides, the bore through its front.
 # Tefa: "the front of the weapon needs to be thicker than the rest of the body and the barrel has to extend further
 # out". So the compensator is wider and taller than the slide, and the barrel runs on past it with a lip at its end.
-COMP = dict(x0=65, x1=75, y=8, z0=31, z1=51, bevel=2, top_ports=(67, 70, 73), port_w=2, port_depth=3)
-FRONT_SIGHT = dict(x0=72, x1=73, z1=54)
-MUZZLE = dict(x0=76, x1=84, r=3.8, bore=2.4, lip=dict(x0=83, r=4.4))   # the barrel out past the compensator
+# Third look (Tefa): "extend the pistol thick part backwards 1x and forwards 3x the thickness of it, so it covers the
+# thin muzzle completely". Its length was 11 cubes (65-75): now 11 more behind and 33 more in front, the bore cut into
+# its front face with a bright crown, no barrel sticking out. Where it reaches back over the frame it wraps around it.
+COMP = dict(x0=54, x1=108, y=8, z0=31, z1=51, bevel=2, top_ports=(90, 94, 98, 102), port_w=2, port_depth=3)
+FRONT_SIGHT = dict(x0=105, x1=106, z1=54)
+MUZZLE = dict(bore=2.4, depth=6)                   # the bore into the compensator's front, its walls dark
 
 # ---- fine detail with the kit's smallest cubes (0.85 mm): bd_pistol_fine.py, the shotgun's way (shotgun/bd_fine.py) ----
 # In cubes, quarters allowed: (part, side, y, ...): y = how far out the face is; side 'both' mirrors it.
 FINE_LINES = [   # cut one small cube deep: (part, side, y, [(x, z) corners, joined])
-    ('slide', 'both', 6, [(12, 37.5), (48, 37.5), (54, 42.5), (63, 42.5)]),   # an angled panel line on the lower band
-    ('slide', 'both', 6, [(52, 35), (54.5, 41)]),                          # the picture's "//" near the nose
-    ('slide', 'both', 6, [(55.5, 35), (58, 41)]),
+    ('slide', 'both', 6, [(12, 37.5), (44, 37.5), (49, 42.5), (53, 42.5)]),   # an angled panel line on the lower band
+    ('slide', 'both', 6, [(46, 35), (48.5, 41)]),                          # the picture's "//" near the nose
+    ('slide', 'both', 6, [(49.5, 35), (52, 41)]),
     ('frame', 'both', 6, [(1, 30.5), (38, 30.5)]),                          # along the frame
     ('frame', 'both', 6, [(40, 18.25), (60, 18.25)]),                       # along the module's bottom
 ]
 FINE_SCREWS = [  # raised screw heads with a slot: (part, side, y, [(x, z) centres])
     ('frame', 'both', 6, [(4, 30.5), (35, 30.5), (59, 24)]),
-    ('slide', 'both', 8, [(66.5, 33.5), (66.5, 48.5)]),                   # the compensator's back corners
+    ('slide', 'both', 8, [(55.5, 33.5), (55.5, 48.5)]),                   # the compensator's back corners
 ]
 FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour); '#' = a dot of dot x dot small cubes
     ('slide', 'both', 5, 2, 48, ("#..#..", ".#..#.", "..#..#", ".#..#.", "#..#.."), 2, 'red'),   # the red ">>"
@@ -84,9 +87,10 @@ FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
                                     "#.....#", "#######"), 1, 'white'),                          # a warning triangle
 ]
 # Tefa: "the bulkier bit needs raised diagonal lines near the muzzle, 4 of them like //// in a row on both sides".
+# Then: "make the //// go alongside it so that they are wider and a bit have bigger gaps between them".
 # Raised strips on the compensator's sides: (side, y, count, first (x, z) bottom, (x, z) top, step along x, width and
 # height in small cubes).
-FINE_RIDGES = [('both', 8, 4, (68, 36), (70.5, 46), 1.75, 2, 2)]
+FINE_RIDGES = [('both', 8, 4, (64, 36), (68, 46), 9, 4, 2)]
 # The military star in a ring on each grip plate: centred on the plate, in cubes.
 LOGO = dict(z=15, ring_r=4.75, ring_w=0.75, star_r=3.75, star_in=1.5, height=2)
 FINE_COL = dict(line=(8, 8, 9), screw=(70, 72, 78), ridge=(58, 60, 66), red=(176, 24, 20), white=(200, 200, 194),
