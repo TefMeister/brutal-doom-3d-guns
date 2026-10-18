@@ -17,7 +17,7 @@ from bl import Space, make_objects
 COLLECTION = "BD pistol"
 ROOT = "BDP_Root"
 PARTS = {"frame": "BDP_frame", "slide": "BDP_slide", "barrel": "BDP_barrel", "trigger": "BDP_trigger",
-         "mag": "BDP_mag", "cover": "BDP_cover"}
+         "mag": "BDP_mag", "cover": "BDP_cover", "heat": "BDP_heat"}
 
 
 def paint(cells):

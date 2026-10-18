@@ -2,7 +2,8 @@
 # The DOOM (2016) pistol's shape (Tefa, 2026-10-18), without its glow and without a hammer, then made a hand cannon
 # with a compensator and silver grip plates.
 # Parts: 'frame' (frame, grip, guard, ring module, tang - never moves), 'slide' (slide and sights - runs back on a
-# shot), 'barrel', 'trigger', 'mag', 'cover' (the ejection port's cover - swings open on its hinge).
+# shot), 'barrel', 'trigger', 'mag', 'cover' (the ejection port's cover - swings open on its hinge), 'heat' (the
+# heat collector in the vent's slots, coloured by the game as the magazine empties).
 import math
 
 from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, GRIP_PLATE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER,
@@ -156,8 +157,8 @@ def slide(g):
         for sign in (-1, 1):
             ys = sorted((sign * V['y'], sign * (V['y'] - V['slot_depth'] + 1)))
             g.cut(x, x + V['slot_w'] - 1, ys[0], ys[1], V['slot_z'][0], V['slot_z'][1])
-            yb = sign * (V['y'] - V['slot_depth'])
-            recolour(g, x, x + V['slot_w'] - 1, yb, yb, V['slot_z'][0], V['slot_z'][1], 'port')
+            yb = sign * (V['y'] - V['slot_depth'])                        # the back wall: the heat collector
+            g.fill('heat', x, x + V['slot_w'] - 1, yb, yb, V['slot_z'][0], V['slot_z'][1], 'heat')
     E = SERRATIONS
     for x in range(E['x0'], E['x1'] + 1, E['step']):
         g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])

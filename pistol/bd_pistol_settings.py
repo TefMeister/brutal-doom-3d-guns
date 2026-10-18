@@ -76,6 +76,25 @@ COMP = dict(x0=54, x1=108, y=8, z0=31, z1=51, bevel=2, top_ports=(90, 94, 98, 10
 VENT = dict(x0=68, x1=102, y=7, z0=23, z1=30, bevel=1, lean=3, slots=(73, 79, 85, 91, 97), slot_w=2, slot_z=(25, 28),
             slot_depth=2)
 STEAM_POINTS = [(x + 0.5, 26.5) for x in VENT['slots']]
+# Then: "lets call it a heat collector, glow more red with each shot the mag gets emptier and blow out more heat the
+# hotter it is". The slots' back walls are their own part ('heat') so the game can colour them: cold with a full
+# magazine, through dull red to bright orange-red at the last round (16, the Brutal Doom pistol's magazine). On the
+# magazine's eject the steam out of STEAM_POINTS grows with the heat, then it is cold again. HEAT_PREVIEW = how hot
+# the Blender model shows it, 0-1.
+HEAT = dict(rounds=16, ramp=[(0.0, (9, 9, 10)), (0.35, (70, 12, 8)), (0.7, (170, 30, 12)), (1.0, (255, 96, 30))],
+            steam_puffs=(1, 8))                  # steam puffs per slot from cold to hottest
+HEAT_PREVIEW = 1.0                                # shown hot in Blender, to judge the glow
+
+
+def heat_colour(level):
+    """The heat collector's colour at a heat level 0-1, along HEAT['ramp']."""
+    ramp = HEAT['ramp']
+    for (l0, c0), (l1, c1) in zip(ramp, ramp[1:]):
+        if level <= l1:
+            t = (level - l0) / (l1 - l0)
+            return tuple(round(a + (b - a) * t) for a, b in zip(c0, c1))
+    return ramp[-1][1]
+
 FRONT_SIGHT = dict(x0=105, x1=106, y=1, z1=54, dot_z=53)   # top level with REAR_SIGHT's; 3 cubes wide, as one
                                                    # cube looked too thin from behind the rear sight
 MUZZLE = dict(bore=2.4, depth=6)                   # the bore into the compensator's front, its walls dark
@@ -132,6 +151,7 @@ COL = dict(
     silver_hi=(66, 70, 77),
     silver_dark=(32, 34, 38),
     sight_dot=(235, 235, 228),
+    heat=heat_colour(HEAT_PREVIEW),
 )
 EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
 
