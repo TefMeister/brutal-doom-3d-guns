@@ -9,9 +9,9 @@ import numpy as np
 
 RATE = 22050
 HISS = {   # name: (length s, loudness 0-1, brightness = low-pass cutoff Hz, sputter 0-1)
-    'low': (0.35, 0.35, 5000, 0.5),
-    'mid': (0.85, 0.6, 7000, 0.35),
-    'high': (1.6, 0.9, 9500, 0.25),
+    'low': (0.45, 0.35, 5000, 0.5),     # Tefa: low "a tad bit longer", mid and high "a little shorter"
+    'mid': (0.7, 0.6, 7000, 0.35),
+    'high': (1.3, 0.9, 9500, 0.25),
 }
 HIGH_PASS_HZ = 1200       # takes the rumble out, leaving the hiss
 ATTACK_S = 0.015          # how fast the steam bursts out
