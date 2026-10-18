@@ -64,11 +64,11 @@ COL = dict(
 EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
 
 # ---- the look pass (2026-10-18, Tefa: combat scratches, dried blood, a chipped bit showing iron) ----
-# Scratches: grooves CARVED one cube deep into the metal's outer sides and top, bare steel at the bottom, some slanted
-# and some two cubes wide as deeper gouges (Tefa, 2026-10-18, on painted-only streaks: "i don't really see any carved
-# out marks and scratches").
-SCRATCHES = dict(count=48, length=(5, 14), seed=666, gouge=0.3)
-COL['scratch'] = (92, 94, 99)    # bare steel showing through the black finish
+# Scratches: painted streaks could not be seen, and grooves one whole cube deep "look like a broken weapon" (Tefa,
+# 2026-10-18), so they are carved with the kit's smallest cubes (0.85 mm) instead: bd_wear.py.
+# Metal only for now: no chips or pits yet (the chip showing iron is its own step), the wood left alone.
+WEAR = dict(seed=666, scratch_per_cm2=0.15, scratch_mm=(4.0, 18.0), along_share=0.75, gouge_share=0.1)
+COL['bare_steel'] = (120, 122, 128)   # inside a cut: the finish scraped through to the steel under it
 
 # per-face shade painted into the colour (not lighting), the same as the Ashes guns
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.55, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
