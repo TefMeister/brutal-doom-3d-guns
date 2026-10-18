@@ -16,6 +16,8 @@ HISS = {   # name: (length s, loudness 0-1, brightness = low-pass cutoff Hz, spu
 HIGH_PASS_HZ = 1200       # takes the rumble out, leaving the hiss
 ATTACK_S = 0.015          # how fast the steam bursts out
 TAIL = 0.45               # share of the length spent fading out
+PRESSURE_DROP = 0.35      # how much quieter the end of the hiss is than its start
+SPUTTER_HZ = 30           # how fast the steam sputters
 SEED = 2016
 
 
@@ -39,8 +41,8 @@ def hiss(length, loud, bright, sputter, rng):
     env = np.minimum(1, t / ATTACK_S)                           # burst in
     fade = max(1, int(n * TAIL))
     env[-fade:] *= np.linspace(1, 0, fade) ** 2                  # die away
-    env *= 1 - 0.35 * t / length                                # pressure dropping
-    flutter = one_pole(rng.uniform(-1, 1, n), 30)               # the steam sputtering
+    env *= 1 - PRESSURE_DROP * t / length                                # pressure dropping
+    flutter = one_pole(rng.uniform(-1, 1, n), SPUTTER_HZ)               # the steam sputtering
     flutter /= max(1e-9, np.abs(flutter).max())
     env *= 1 + sputter * flutter
     x *= env
