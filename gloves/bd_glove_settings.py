@@ -95,4 +95,22 @@ WEAR = dict(seed=667, scratch_per_cm2=0.08, scratch_mm=(5.0, 18.0), along_share=
 # lighter colour than what they are on"; steel in every cut was the first try).
 SCRATCH_LIGHTEN = 1.4
 
-SHOW_AT = (0.30, 0.10, 0.0)        # Blender metres: where the glove sits, beside the shotgun, while it is shaped
+# ---- on the shotgun (Tefa, 2026-10-18: "please now swap the hands over") ----
+# The Ashes shotgun hands' poses (ashes-2063-weapons vs_hands.py, 2026-09-24), in this gun's cube space.
+sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "shotgun")))
+from bd_settings import RIGHT_HAND_MOVE, PUMP as GUN_PUMP     # where the Ashes right hand was moved to; the pump
+RIGHT_POSE = dict(
+    x0=-11, y0=-10, z0=-13,         # where hand space lands (the Ashes grip's front top, its right side)
+    grip_top=-1, rake=0.38,         # the hand leans back with the Ashes grip below this height
+    curls={"middle": (45, 55, 60), "ring": (45, 55, 60), "pinky": (40, 50, 50), "index": (10, 35, 30)},
+    thumb=[(12, 5, 80), (10, -30, 20)],
+    shift=RIGHT_HAND_MOVE,          # onto this gun's stock wrist, as the Ashes hand was
+)
+LEFT_POSE = dict(
+    x0=116, y0=19,                  # the Ashes pump's middle; the knuckle line just off the pump's right side
+    z0=GUN_PUMP['z0'] - 1 - 4,      # the palm's face (4 cubes below hand-space 0) just under this pump
+    left_edge=GUN_PUMP['y'] + 1, wrist_drop=0.7,   # past the pump's left side the wrist drops 1 cube in 1.4
+    curls={"index": (65, 50, 20), "middle": (65, 50, 20), "ring": (65, 50, 20), "pinky": (60, 45, 15)},
+    thumb=[(11, 88, 22), (11, 80, 60)], thumb_base=(-11, 12, -1), thumb_size=(9, 7),
+    shift=(26, 0, 0),               # forward to the pump's place on this gun (the Ashes LEFT_SHIFT)
+)       # Blender metres: where the glove sits, beside the shotgun, while it is shaped

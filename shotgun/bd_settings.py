@@ -71,7 +71,9 @@ EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_h
 # brighter than the gun".
 WEAR = dict(seed=666, scratch_per_cm2=0.05, scratch_mm=(12.0, 40.0), along_share=0.75, gouge_share=0.1,
             zigzag_share=0.35)
-COL['bare_steel'] = (46, 47, 51)      # inside a cut: only a little brighter than the black metal (26, 26, 28)
+# Inside a cut: a fraction lighter than what it is cut into, as on the gloves (Tefa, 2026-10-18: "make the scratches on
+# the gun follow the same brightness what you applied to the glove scratches"; a fixed (46, 47, 51) before).
+SCRATCH_LIGHTEN = 1.4
 
 # per-face shade painted into the colour (not lighting), the same as the Ashes guns
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.55, (0, 1, 0): 0.88, (0, -1, 0): 0.88,

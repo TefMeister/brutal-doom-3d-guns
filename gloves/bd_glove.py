@@ -78,8 +78,8 @@ def _joints(segs):
     return {segs[0][0], segs[0][0] + segs[1][0]} if len(segs) > 2 else {segs[0][0]}
 
 
-def _finger(cells, name, xc, y0, length):
-    a, b, c = CURL
+def _finger(cells, name, xc, y0, length, curl=None):
+    a, b, c = curl or CURL
     segs = [(length * 4 // 10, SPLAY[name] * 3, a), (length * 3 // 10, SPLAY[name] * 2, a + b),
             (length - length * 4 // 10 - length * 3 // 10, 0, a + b + c)]
     joints = _joints(segs)
@@ -92,15 +92,17 @@ def _finger(cells, name, xc, y0, length):
     return _chain(cells, xc, FINGER_W, FINGER_T, (0, y0, 1), segs, colour_at, _plate_steps(segs), FINGER_METAL)
 
 
-def _thumb(cells):
-    segs = [(n, -side, down) for n, side, down in THUMB_SEGS]       # -side: out towards -x
+def _thumb(cells, path=None, base=None, size=None):
+    """path: [(length, degrees outward, degrees down)], base: where it leaves the palm, size: (width, thickness)."""
+    segs = [(n, -side, down) for n, side, down in (path or THUMB_SEGS)]   # -side: out towards -x
     joints = _joints(segs)
 
     def colour_at(step, top):
         return 'under_dark' if any(j <= step < j + CREASE for j in joints) and top else 'under'
 
-    bx, by, bz = THUMB_BASE
-    return _chain(cells, bx, THUMB_W, THUMB_T, (0, by, bz), segs, colour_at, _plate_steps(segs, start=3),
+    bx, by, bz = base or THUMB_BASE
+    w, t = size or (THUMB_W, THUMB_T)
+    return _chain(cells, bx, w, t, (0, by, bz), segs, colour_at, _plate_steps(segs, start=3),
                   FINGER_METAL)
 
 
@@ -201,17 +203,23 @@ def _plates(cells):
         cells[(x, y, _top(cells, x, y) + 1)] = 'rivet'
 
 
-def right_glove():
+def right_glove(curls=None, thumb=None, thumb_base=None, thumb_size=None):
+    """Relaxed and flat by default; curls ({finger: (a, b, c) degrees}) and a thumb path pose it round a gun."""
     cells = {}
     _palm(cells)
     _cuff(cells)
     _plates(cells)
+    curls = curls or {}
     for name, xc, y0, length in FINGERS:
-        _finger(cells, name, xc, y0, length)
-    tip = _thumb(cells)
-    assert tip[0] < THUMB_BASE[0], "the built glove is not a right hand"     # thumb out towards -x
+        _finger(cells, name, xc, y0, length, curls.get(name))
+    tip = _thumb(cells, thumb, thumb_base, thumb_size)
+    if thumb is None:
+        assert tip[0] < THUMB_BASE[0], "the built glove is not a right hand"     # thumb out towards -x
+    else:
+        assert thumb[0][1] > 0, "a right hand's thumb must leave the palm outwards (side > 0)"
     return cells
 
 
-def left_glove():
-    return {(-x, y, z): c for (x, y, z), c in right_glove().items()}
+def left_glove(**pose):
+    """The exact mirror of the right glove across x: the only way the left hand is made."""
+    return {(-x, y, z): c for (x, y, z), c in right_glove(**pose).items()}

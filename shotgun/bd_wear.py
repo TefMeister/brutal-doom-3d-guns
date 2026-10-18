@@ -10,7 +10,7 @@ import bpy
 import bl
 import edit
 import carve_wear as cw
-from bd_settings import VOXEL_M, WEAR, COL
+from bd_settings import VOXEL_M, WEAR, SCRATCH_LIGHTEN
 
 PARTS = ("BD_body", "BD_pump")
 
@@ -40,4 +40,4 @@ def carve(names, wear, bare_rgb=None, lighten=None):
 
 
 def run():
-    carve(PARTS, WEAR, COL['bare_steel'])
+    carve(PARTS, WEAR, lighten=SCRATCH_LIGHTEN)

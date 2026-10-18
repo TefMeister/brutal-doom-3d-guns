@@ -1,26 +1,33 @@
-# Builds Doomguy's right glove into the OPEN Blender file, beside the shotgun, for shaping it together with Tefa
-# (MCP: import bd_glove_live; bd_glove_live.run(<atlas folder>)). Replaces its own objects each time and never touches
-# anything else in the file.
+# Puts Doomguy's gloves on the Brutal Doom shotgun in the OPEN Blender file, in place of the Ashes hands, for shaping
+# them together with Tefa (MCP: import bd_glove_live; bd_glove_live.run(<atlas folder>)). Replaces its own objects
+# each time, hides the Ashes hands (never deletes them) and touches nothing else in the file.
 import importlib
 import os
 import sys
 
 import bpy
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "shotgun"))   # bd_wear.carve
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "shotgun"))   # bd_wear, bd_gun
 
 import bd_glove_settings
 import bd_glove
+import bd_glove_pose
 importlib.reload(bd_glove_settings)
 importlib.reload(bd_glove)
-from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, SHOW_AT, WEAR, SCRATCH_LIGHTEN
+importlib.reload(bd_glove_pose)
+from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, WEAR, SCRATCH_LIGHTEN
+from bd_settings import PIVOT
+import bd_gun
+import bd_wear
 import bl
 import edit
-import bd_wear
 from bl import Space, make_objects
 
 COLLECTION = "BD gloves"
 ROOT = "BD_Gloves_Root"
+NAMES = {"right": "BD_glove_right", "left": "BD_glove_left"}
+# the Ashes hands copied into this file, hidden once the gloves take their place
+ASHES_HANDS = ("Hand_right_hand", "Hand_right_thumb", "Hand_right_tip", "Hand_left_hand", "Hand_left_thumb")
 
 
 def run(atlas_dir):
@@ -30,12 +37,15 @@ def run(atlas_dir):
     for o in list(col.objects):
         bpy.data.objects.remove(o)
     root = bpy.data.objects.new(ROOT, None)
-    root.location = SHOW_AT
     col.objects.link(root)
-    cells = {c: COL[n] for c, n in bd_glove.right_glove().items()}
+    gun = set()
+    for cells in bd_gun.build().p.values():
+        gun |= set(cells)
+    posed = bd_glove_pose.gloves(gun)
+    specs = [(NAMES[k], {c: COL[n] for c, n in v.items()}, PIVOT) for k, v in posed.items()]
     os.makedirs(atlas_dir, exist_ok=True)
-    objs = make_objects([("BD_glove_right", cells, (0, 0, 0))], root, os.path.join(atlas_dir, "bd_gloves_atlas.png"),
-                        Space(VOXEL_M, (0, 0, 0)), SHADE, NOISE)
+    objs = make_objects(specs, root, os.path.join(atlas_dir, "bd_gloves_atlas.png"), Space(VOXEL_M, PIVOT),
+                        SHADE, NOISE)
     for o in objs.values():
         for c in list(o.users_collection):
             c.objects.unlink(o)
@@ -44,6 +54,12 @@ def run(atlas_dir):
         if not bl.pick_mode_check(o, VOXEL_M):
             bl.split_to_cubes(o, VOXEL_M)
         edit.convert(o, VOXEL_M)
+    # each glove its own scratches: the seed is mixed with the object's name
     bd_wear.carve([o.name for o in objs.values()], WEAR, lighten=SCRATCH_LIGHTEN)
-    print("glove cubes:", len(cells))
+    for n in ASHES_HANDS:
+        o = bpy.data.objects.get(n)
+        if o:
+            o.hide_set(True)
+            o.hide_render = True
+    print("glove cubes:", {k: len(v) for k, v in posed.items()})
     return objs
