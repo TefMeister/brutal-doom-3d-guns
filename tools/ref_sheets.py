@@ -15,6 +15,8 @@ from PIL import Image, ImageDraw
 CELL = 160              # each frame is drawn in a square this many pixels wide
 PER_ROW = 8
 LABEL_H = 18
+TITLE_H = 24            # room for the title line at the top
+BACKGROUND = (40, 40, 44)
 
 
 def sprite_index(root):
@@ -32,13 +34,13 @@ def draw_run(run, idx, title, path):
     if not frames:
         return False
     rows = (len(frames) + PER_ROW - 1) // PER_ROW
-    sheet = Image.new("RGB", (PER_ROW * CELL, rows * (CELL + LABEL_H) + 24), (40, 40, 44))
+    sheet = Image.new("RGB", (PER_ROW * CELL, rows * (CELL + LABEL_H) + TITLE_H), BACKGROUND)
     d = ImageDraw.Draw(sheet)
     d.text((6, 4), f"{title}: {run['tics']:g} tics = {run['seconds']} s", fill=(230, 230, 230))
     for n, f in enumerate(frames):
         img = Image.open(idx[f["sprite"].upper()]).convert("RGBA")
         img.thumbnail((CELL - 8, CELL - 8))
-        x, y = (n % PER_ROW) * CELL, 24 + (n // PER_ROW) * (CELL + LABEL_H)
+        x, y = (n % PER_ROW) * CELL, TITLE_H + (n // PER_ROW) * (CELL + LABEL_H)
         sheet.paste(img, (x + (CELL - img.width) // 2, y + (CELL - img.height) // 2), img)
         d.text((x + 4, y + CELL), f"{f['sprite']}  @{f['tic']:g}  x{f['tics']:g}", fill=(200, 200, 120))
     sheet.save(path)
