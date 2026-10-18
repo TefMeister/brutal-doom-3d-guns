@@ -63,6 +63,11 @@ COL = dict(
 )
 EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
 
+# ---- the look pass (2026-10-18, Tefa: combat scratches, dried blood, a chipped bit showing iron) ----
+# Scratches: short bright streaks scraped into the metal's outer sides and top, a few cubes long, some slanted.
+SCRATCHES = dict(count=26, length=(3, 9), seed=666)
+COL['scratch'] = (92, 94, 99)    # bare steel showing through the black finish
+
 # per-face shade painted into the colour (not lighting), the same as the Ashes guns
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.55, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.74, (-1, 0, 0): 0.74}
