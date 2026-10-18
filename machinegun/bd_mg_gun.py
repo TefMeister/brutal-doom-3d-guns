@@ -1,13 +1,12 @@
 # The Brutal Doom cube machine gun's shape, split into parts: {part: {(x, y, z): colour name}}. No Blender here.
-# A mash of two pictures Tefa chose (2026-10-18), with dried blood all over it (bd_mg_settings.py says which part
-# came from which).
+# A mash of two pictures Tefa chose (2026-10-18), in the first one's dark red paint (bd_mg_settings.py says which
+# part came from which).
 # Parts: 'body' (never moves), 'mag', 'trigger', 'charge' (the charging handle - runs back on a reload).
 import math
-import random
 
 from bd_mg_settings import (ROUND_SLACK, RECEIVER, RAIL, STOCK, STOCK_WINDOW, BUTT, GRIP, GUARD, TRIGGER, MAG,
                             MAG_STRAP, BOX_SIGHT, AMMO_WINDOW, CHARGE, HANDGUARD, SHROUD, SIDE_TUBE, FRONT_BLOCK,
-                            BARREL, BRAKE, FRONT_SIGHT, BLOOD, BLOOD_SKIP)
+                            BARREL, BRAKE, FRONT_SIGHT)
 from parts import Parts
 
 
@@ -50,7 +49,7 @@ def receiver(g):
     for x in range(L['x0'] + 1, L['x1'], L['slot_step']):
         g.cut(x, x + 1, -L['y'], L['y'], L['z1'], L['z1'])
     S = BOX_SIGHT                                                        # the box sight and its tunnel
-    box(g, 'body', S['x0'], S['x1'], S['y'], S['z0'], S['z1'], 'metal', 1)
+    box(g, 'body', S['x0'], S['x1'], S['y'], S['z0'], S['z1'], 'red', 1)
     g.cut(S['x0'], S['x1'], -S['tunnel_y'], S['tunnel_y'], S['tunnel_z'][0], S['tunnel_z'][1])
     recolour(g, S['x0'], S['x1'], -S['tunnel_y'] - 1, S['tunnel_y'] + 1, S['tunnel_z'][0] - 1,
              S['tunnel_z'][1] + 1, 'metal_dark')
@@ -73,7 +72,7 @@ def stock(g):
             for z in range(bottom, S['top'] + 1):
                 if (S['y'] - abs(y)) + min(z - bottom, S['top'] - z) < S['bevel']:
                     continue
-                g.put('body', x, y, z, 'panel' if abs(y) == S['y'] and W['z1'] < z < S['top'] - 1 else 'metal')
+                g.put('body', x, y, z, 'red' if abs(y) == S['y'] and W['z1'] < z < S['top'] - 1 else 'metal')
     g.cut(W['x0'], W['x1'], -S['y'], S['y'], W['z0'], W['z1'])          # the skeleton window
     for zc in W['rods']:                                                 # two rods across it
         g.tube('body', W['x0'], W['x1'], zc, W['rod_r'], 'metal_hi')
@@ -100,7 +99,7 @@ def grip(g):
                     continue
                 ridge = (abs(y) == G['y'] and b + G['ridge_inset'] <= x <= f - G['ridge_inset']
                          and z % G['ridge_step'] == 0)
-                g.put('body', x, y, z, 'grip_ridge' if ridge else 'grip')
+                g.put('body', x, y, z, 'red_dark' if ridge else 'red')
     U = GUARD
     front = grip_front(U['z_bottom'] + 1)
     g.fill('body', front, U['x1'], -U['y'], U['y'], U['z_bottom'], U['z_bottom'] + 1, 'metal')
@@ -130,7 +129,7 @@ def mag(g):
 
 def front(g):
     H = HANDGUARD
-    box(g, 'body', H['x0'], H['x1'], H['y'], H['z0'], H['z1'], 'panel', H['bevel'])
+    box(g, 'body', H['x0'], H['x1'], H['y'], H['z0'], H['z1'], 'red', H['bevel'])
     for x in H['slots']:
         g.cut(x, x + H['slot_len'] - 1, -H['y'], -H['y'] + 1, H['slot_z'][0], H['slot_z'][1])
         g.cut(x, x + H['slot_len'] - 1, H['y'] - 1, H['y'], H['slot_z'][0], H['slot_z'][1])
@@ -152,7 +151,7 @@ def front(g):
             for y in range(-F['y'], F['y'] + 1):
                 if (F['y'] - abs(y)) + min(z - F['z0'], F['z1'] - z) < F['bevel']:
                     continue
-                g.put('body', x, y, z, 'panel')
+                g.put('body', x, y, z, 'red')
     for x in F['slashes']:                                               # the red gun's three slots, slanted
         for z in range(F['slash_z'][0], F['slash_z'][1] + 1):
             xs = x + (z - F['slash_z'][0]) // 2
@@ -178,85 +177,6 @@ def front(g):
                P['ears_z1'], 'metal')
 
 
-def blood(g):
-    """Dried blood all over: blotches with darker rims on the sides and tops, runs dripping down, and spatter.
-    Each stain is recorded in g.stains for the fine pass's spatter: (side, x, z, r) - side +1/-1 for the left or
-    right face, 0 for a top."""
-    B = BLOOD
-    rng = random.Random(B['seed'])
-    owner = {}
-    for name, cells in g.p.items():
-        for c in cells:
-            owner[c] = name
-    outer = {1: {}, -1: {}}                                              # (x, z) -> the outermost y on each side
-    top = {}                                                             # (x, y) -> the highest z
-    for (x, y, z) in owner:
-        for s in (1, -1):
-            if (x, z) not in outer[s] or s * y > s * outer[s][(x, z)]:
-                outer[s][(x, z)] = y
-        if (x, y) not in top or z > top[(x, y)]:
-            top[(x, y)] = z
-
-    def paint(cell, colour):
-        name = owner.get(cell)
-        if name and g.p[name][cell] not in BLOOD_SKIP:
-            g.p[name][cell] = colour
-
-    def blot(r, u, v, cell_at, stretch=1.0):
-        """One blotch centred on (u, v) in the face's own two directions; returns its lowest v at each u."""
-        w1, w2 = rng.uniform(-1, 1) * B['wobble'][0], rng.uniform(-1, 1) * B['wobble'][1]
-        p1, p2 = rng.uniform(0, 2 * math.pi), rng.uniform(0, 2 * math.pi)
-        lowest = {}
-        reach = int(math.ceil(r * (1 + abs(w1) + abs(w2)) * stretch)) + 1
-        for i in range(-reach, reach + 1):
-            for j in range(-reach, reach + 1):
-                a = math.atan2(j, i / stretch)
-                edge = r * (1 + w1 * math.sin(3 * a + p1) + w2 * math.sin(5 * a + p2))
-                d = math.hypot(i / stretch, j)
-                if d > edge:
-                    continue
-                cell = cell_at(u + i, v + j)
-                if cell is None:
-                    continue
-                paint(cell, 'blood_dark' if d > edge * B['rim'] else rng.choice(('blood', 'blood', 'blood_mid')))
-                lowest[u + i] = min(lowest.get(u + i, v + j), v + j)
-        return lowest
-
-    g.stains = []
-    side_cols = {s: list(outer[s]) for s in (1, -1)}
-    for _ in range(B['side_stains']):
-        s = rng.choice((1, -1))
-        x, z = rng.choice(side_cols[s])
-        r = rng.uniform(*B['radius'])
-
-        def on_side(xx, zz, s=s):
-            y = outer[s].get((xx, zz))
-            return None if y is None else (xx, y, zz)
-        lowest = blot(r, x, z, on_side, stretch=rng.uniform(1.0, 1.8))
-        g.stains.append((s, x, z, r))
-        if rng.random() < B['drip_share'] and lowest:                   # runs dripping down the face
-            for _ in range(rng.randint(*B['drips'])):
-                dx = rng.choice(list(lowest))
-                zz = lowest[dx] - 1
-                y0 = outer[s].get((dx, zz + 1))
-                for k in range(rng.randint(*B['drip_len'])):
-                    y = outer[s].get((dx, zz - k))
-                    if y is None or y0 is None or abs(y - y0) > 1:
-                        break
-                    paint((dx, y, zz - k), 'blood_mid')
-                    y0 = y
-                else:
-                    paint((dx, y0, zz - k), 'blood_dark')                # a dried bead at its end
-    top_cols = list(top)
-    for _ in range(B['top_stains']):
-        x, y = rng.choice(top_cols)
-        r = rng.uniform(*B['radius'])
-
-        def on_top(xx, yy):
-            z = top.get((xx, yy))
-            return None if z is None else (xx, yy, z)
-        blot(r, x, y, on_top, stretch=rng.uniform(1.0, 2.0))
-        g.stains.append((0, x, y, r))
 
 
 def build():
@@ -266,5 +186,4 @@ def build():
     grip(g)
     mag(g)
     front(g)
-    blood(g)
     return g
