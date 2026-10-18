@@ -135,8 +135,12 @@ def slide(g):
     recolour(g, P['x0'], P['x1'], P['y_in'] + 1, P['y_in'] + 1, P['z0'], P['z1'], 'port')        # back wall
     recolour(g, P['x0'], P['x1'], -S['y'] + 1, P['y_in'], P['z0'] - 1, P['z0'] - 1, 'port')      # floor, the outer
     recolour(g, P['x0'], P['x1'], -D['y'] + 1, P['y_in'], P['z1'] + 1, P['z1'] + 1, 'port')      # face left metal (the roof is in the deck)
-    C = COMP                                                             # the compensator on the nose
-    box(g, 'slide', C['x0'], C['x1'], C['y'], C['z0'], C['z1'], 'metal', C['bevel'])
+    C = COMP                                                             # the compensator on the nose, wrapping
+    nose = Parts()                                                       # around the frame where it reaches back
+    box(nose, 'slide', C['x0'], C['x1'], C['y'], C['z0'], C['z1'], 'metal', C['bevel'])
+    for (x, y, z), c in nose.p['slide'].items():
+        if (x, y, z) not in g.p['frame']:
+            g.put('slide', x, y, z, c)
     for px in C['top_ports']:
         g.cut(px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'] + 1, C['z1'])
         recolour(g, px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'], C['z1'] - C['port_depth'], 'port')
@@ -157,18 +161,18 @@ def slide(g):
     K = CASE                                                             # a brass case in the port
     g.tube('barrel', K['x0'] + K['head'], K['x1'], K['zc'], K['r'], 'brass', yc=K['y'])
     g.tube('barrel', K['x0'], K['x0'] + K['head'] - 1, K['zc'], K['r'] + 0.4, 'brass_hi', yc=K['y'])
-    M = MUZZLE                                                           # the barrel out past the compensator
-    g.tube('barrel', M['x0'], M['x1'], B['zc'], M['r'], 'metal_hi')
-    g.tube('barrel', M['lip']['x0'], M['x1'], B['zc'], M['lip']['r'], 'metal_hi')
-    ri = math.ceil(M['bore']) + 1
+    M = MUZZLE                                                           # the bore into the compensator's front
+    back = C['x1'] - M['depth']
+    ri = math.ceil(M['bore']) + 2
     for y in range(-ri, ri + 1):
         for z in range(math.floor(B['zc'] - ri), math.ceil(B['zc'] + ri) + 1):
             d2 = y * y + (z - B['zc']) ** 2
             if d2 <= M['bore'] ** 2 + ROUND_SLACK:
-                g.cut(C['x0'] + 1, M['x1'], y, y, z, z)
-                g.put('barrel', C['x0'], y, z, 'bore')
-            elif d2 <= (M['bore'] + 1) ** 2 + ROUND_SLACK:                # the bore's walls, dark
-                recolour(g, C['x0'] + 1, M['x1'] - 1, y, y, z, z, 'port')
+                g.cut(back + 1, C['x1'], y, y, z, z)
+                g.put('slide', back, y, z, 'bore')
+            elif d2 <= (M['bore'] + 1) ** 2 + ROUND_SLACK:                # the bore's walls dark, a bright crown
+                recolour(g, back + 1, C['x1'] - 1, y, y, z, z, 'port')
+                recolour(g, C['x1'], C['x1'], y, y, z, z, 'metal_hi')
 
 
 def cover(g):
