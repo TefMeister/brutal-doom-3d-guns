@@ -10,12 +10,13 @@ import bd_settings
 import bd_gun
 importlib.reload(bd_settings)
 importlib.reload(bd_gun)
-from bd_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE
+from bd_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE, RIGHT_HAND_MOVE
 from bl import Space, make_objects
 
 COLLECTION = "BD shotgun"
 ROOT = "BD_Root"
 PARTS = {"body": "BD_body"}        # cube part -> Blender object
+RIGHT_HAND = "Shotgun_righthand"   # the Ashes right hand's carrier, copied into this file as a reference
 
 
 def paint(cells):
@@ -39,5 +40,18 @@ def run(atlas_dir):
         for c in list(o.users_collection):
             c.objects.unlink(o)
         col.objects.link(o)
+    move_right_hand()
     print("cubes:", {k: len(v) for k, v in g.p.items()})
     return objs
+
+
+def move_right_hand():
+    """Put the copied Ashes right hand on this gun's wrist: its first place is remembered, so a rerun never adds up."""
+    h = bpy.data.objects.get(RIGHT_HAND)
+    if not h:
+        return
+    if "ashes_location" not in h:
+        h["ashes_location"] = tuple(h.location)
+    base = Space(VOXEL_M, PIVOT)
+    shift = base.to_bl(PIVOT[0] + RIGHT_HAND_MOVE[0], PIVOT[1] + RIGHT_HAND_MOVE[1], PIVOT[2] + RIGHT_HAND_MOVE[2])
+    h.location = tuple(a + b for a, b in zip(h["ashes_location"], shift))
