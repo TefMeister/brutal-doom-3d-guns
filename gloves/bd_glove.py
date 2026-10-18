@@ -149,12 +149,12 @@ def _cuff(cells):
             return 'under_dark'                                      # the leather lining at the open end
         if y in CUFF_BANDS:
             return 'steel_hi' if top else 'steel'
-        return 'green'
+        return 'cuff'
 
     _slab(cells, C['y0'], C['y1'], C['half_w'], C['thick'], C['corner'], colour_at)
     P = CUFF_PANEL
     _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'],
-           'green')
+           'cuff')
     for x, y in CUFF_RIVETS:
         cells[(x, y, _top(cells, x, y) + 1)] = 'rivet'
 
