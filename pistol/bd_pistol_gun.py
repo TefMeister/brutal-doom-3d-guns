@@ -2,11 +2,11 @@
 # The DOOM (2016) pistol's shape (Tefa, 2026-10-18), without its glow and without a hammer, then made a hand cannon
 # with a compensator and silver grip plates.
 # Parts: 'frame' (frame, grip, guard, ring module, tang - never moves), 'slide' (slide and sights - runs back on a
-# shot), 'barrel', 'trigger', 'mag'.
+# shot), 'barrel', 'trigger', 'mag', 'cover' (the ejection port's cover - swings open on its hinge).
 import math
 
 from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, GRIP_PLATE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER,
-                                MODULE, RING, RAIL, SLIDE, DECK, REAR_SLOPE, WINDOW, SIDE_WINDOWS, SERRATIONS,
+                                MODULE, RING, RAIL, SLIDE, DECK, REAR_SLOPE, DIAMONDS, PORT, CASE, COVER, SERRATIONS,
                                 REAR_SIGHT, FRONT_SIGHT, BARREL, COMP, MUZZLE)
 from parts import Parts
 
@@ -123,24 +123,23 @@ def slide(g):
         drop = round((R['x1'] - x) * R['drop'] / max(1, R['x1'] - S['x0']))
         if drop:
             g.cut(x, x, -S['y'], S['y'], S['z1'] - drop + 1, S['z1'])
-    W = WINDOW
-    g.cut(W['x0'], W['x1'], -W['y'], W['y'], W['z0'], S['z1'])
-    recolour(g, W['x0'] - 1, W['x0'] - 1, -W['y'], W['y'], W['z0'], S['z1'], 'port')
-    V = SIDE_WINDOWS                                                     # windows down the deck onto the barrel
-    for x in V['x']:
-        g.cut(x, x + V['length'] - 1, -D['y'], -D['y'], V['z0'], V['z1'])
-        g.cut(x, x + V['length'] - 1, D['y'], D['y'], V['z0'], V['z1'])
+    V = DIAMONDS                                                         # diamond holes, LEFT side, onto the barrel
+    for cx in V['x']:
+        for x in range(cx - V['half'], cx + V['half'] + 1):
+            for z in range(V['z'] - V['half'], V['z'] + V['half'] + 1):
+                if abs(x - cx) + abs(z - V['z']) <= V['half']:
+                    g.cut(x, x, V['y_in'], S['y'], z, z)
+                    recolour(g, x, x, V['y_in'] - 1, V['y_in'] - 1, z, z, 'port')
+    P = PORT                                                             # ejection port, RIGHT side
+    g.cut(P['x0'], P['x1'], -S['y'], P['y_in'], P['z0'], P['z1'])
+    recolour(g, P['x0'], P['x1'], P['y_in'] + 1, P['y_in'] + 1, P['z0'], P['z1'], 'port')        # back wall
+    recolour(g, P['x0'], P['x1'], -S['y'] + 1, P['y_in'], P['z0'] - 1, P['z0'] - 1, 'port')      # floor, the outer
+    recolour(g, P['x0'], P['x1'], -D['y'] + 1, P['y_in'], P['z1'] + 1, P['z1'] + 1, 'port')      # face left metal (the roof is in the deck)
     C = COMP                                                             # the compensator on the nose
     box(g, 'slide', C['x0'], C['x1'], C['y'], C['z0'], C['z1'], 'metal', C['bevel'])
     for px in C['top_ports']:
         g.cut(px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'] + 1, C['z1'])
         recolour(g, px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'], C['z1'] - C['port_depth'], 'port')
-    Q = C['side_ports']
-    for sign in (-1, 1):
-        y_in = C['y'] - Q['depth']
-        g.cut(Q['x0'], Q['x1'], min(sign * C['y'], sign * (y_in + 1)), max(sign * C['y'], sign * (y_in + 1)),
-              Q['z0'], Q['z1'])
-        recolour(g, Q['x0'], Q['x1'], sign * y_in, sign * y_in, Q['z0'], Q['z1'], 'port')
     E = SERRATIONS
     for x in range(E['x0'], E['x1'] + 1, E['step']):
         g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])
@@ -153,12 +152,14 @@ def slide(g):
     F = FRONT_SIGHT
     g.fill('slide', F['x0'], F['x1'], 0, 0, C['z1'] + 1, F['z1'], 'metal')
     g.put('slide', F['x0'], 0, F['z1'], 'sight_dot')
-    B = BARREL                                                           # copper, seen through the window
+    B = BARREL                                                           # copper, seen through the holes and the port
     g.tube('barrel', B['x0'], B['x1'], B['zc'], B['r'], 'copper')
-    for x in range(W['x0'], W['x1'] + 1):
-        g.put('barrel', x, 0, round(B['zc'] + B['r']), 'copper_hi')
-    M = MUZZLE
+    K = CASE                                                             # a brass case in the port
+    g.tube('barrel', K['x0'] + K['head'], K['x1'], K['zc'], K['r'], 'brass', yc=K['y'])
+    g.tube('barrel', K['x0'], K['x0'] + K['head'] - 1, K['zc'], K['r'] + 0.4, 'brass_hi', yc=K['y'])
+    M = MUZZLE                                                           # the barrel out past the compensator
     g.tube('barrel', M['x0'], M['x1'], B['zc'], M['r'], 'metal_hi')
+    g.tube('barrel', M['lip']['x0'], M['x1'], B['zc'], M['lip']['r'], 'metal_hi')
     ri = math.ceil(M['bore']) + 1
     for y in range(-ri, ri + 1):
         for z in range(math.floor(B['zc'] - ri), math.ceil(B['zc'] + ri) + 1):
@@ -167,7 +168,20 @@ def slide(g):
                 g.cut(C['x0'] + 1, M['x1'], y, y, z, z)
                 g.put('barrel', C['x0'], y, z, 'bore')
             elif d2 <= (M['bore'] + 1) ** 2 + ROUND_SLACK:                # the bore's walls, dark
-                recolour(g, C['x0'] + 1, C['x1'] - 1, y, y, z, z, 'port')
+                recolour(g, C['x0'] + 1, M['x1'] - 1, y, y, z, z, 'port')
+
+
+def cover(g):
+    """The ejection port's cover, closed, its own part so it can swing open on its hinge later."""
+    V = COVER
+    for z in range(V['z0'], V['z1'] + 1):                                # one cube proud of the slide: the
+        y = V['y'] + (1 if z >= DECK['z0'] else 0)                       # upper half steps in with the deck
+        g.fill('cover', V['x0'], V['x1'], y, y, z, z, 'metal_mid')
+        if V['z0'] < z < V['z1']:
+            for x in V['ridges']:                                        # raised grip ridges on it
+                g.put('cover', x, y - 1, z, 'metal_hi')
+    for x in range(V['x0'], V['x1'] + 1):                                # the hinge along its bottom edge
+        g.put('cover', x, V['y'], V['hinge_z'], 'metal_hi' if x % 4 < 2 else 'metal')
 
 
 def build():
@@ -175,4 +189,5 @@ def build():
     grip(g)
     frame(g)
     slide(g)
+    cover(g)
     return g

@@ -18,7 +18,7 @@ import bd_pistol_gun
 import bd_wear
 from bd_fine import Gun, Detail, surface, raster, sides, out_dir
 from bd_pistol_settings import (VOXEL_M, FINE_LINES, FINE_SCREWS, FINE_STAMPS, FINE_COL, WEAR, SCRATCH_LIGHTEN, LOGO,
-                                GRIP, GRIP_PLATE)
+                                GRIP, GRIP_PLATE, FINE_RIDGES)
 from bd_pistol_live import PARTS
 
 F = edit.FINE
@@ -63,6 +63,20 @@ def logo(s, g, dt):
                 elif in_star(u, v, L['star_r'], L['star_in']):
                     for k in range(1, L['height'] + 1):
                         dt.build(tuple(q[n] + d[n] * k for n in range(3)), rgb01('star'))
+
+
+def ridges(s, g, dt):
+    """Raised diagonal strips on the compensator's sides, like ////."""
+    for side, y, count, (x0, z0), (x1, z1), step, width, height in FINE_RIDGES:
+        for sign in sides(side):
+            d = out_dir(sign)
+            for k in range(count):
+                for x, z in raster([(x0 + k * step, z0), (x1 + k * step, z1)]):
+                    for w in range(width):
+                        q = surface(s, g, sign, y, x + w / F, z, tol=0)
+                        if q:
+                            for h in range(1, height + 1):
+                                dt.build(tuple(q[n] + d[n] * h for n in range(3)), rgb01('ridge'))
 
 
 def part_detail(part, ob, cells):
@@ -114,6 +128,8 @@ def part_detail(part, ob, cells):
 
     if part == 'frame':
         logo(s, g, dt)
+    if part == 'slide':
+        ridges(s, g, dt)
 
     dt.paint_cuts()
     small.tidy(s)
