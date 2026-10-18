@@ -104,7 +104,7 @@ RIGHT_POSE = dict(
     grip_top=-1, rake=0.38,         # the hand leans back with the Ashes grip below this height
     curls={"middle": (45, 55, 60), "ring": (45, 55, 60), "pinky": (40, 50, 50), "index": (10, 35, 30)},
     thumb=[(12, 5, 80), (10, -30, 20)],
-    shift=RIGHT_HAND_MOVE,          # onto this gun's stock wrist, as the Ashes hand was
+    shift=RIGHT_HAND_MOVE,          # onto this gun's grip
 )
 LEFT_POSE = dict(
     x0=116, y0=19,                  # the Ashes pump's middle; the knuckle line just off the pump's right side

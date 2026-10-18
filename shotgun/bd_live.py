@@ -28,7 +28,7 @@ def paint(cells):
     out = {}
     for (x, y, z), name in cells.items():
         rgb = COL[name]
-        if name == 'metal':
+        if name in ('metal', 'metal_mid'):
             open_up = ((x, y, z + 1) not in cells) + ((x, y, z - 1) not in cells)
             open_side = ((x, y + 1, z) not in cells) + ((x, y - 1, z) not in cells)
             if open_up and open_side:
