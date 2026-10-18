@@ -34,8 +34,21 @@ CUFF_L, CUFF_W = 9, 20              # cubes of cuff below the wrist, and its wid
 CREASE = 1                          # a darker line this many cubes long at each finger joint
 TIP_ROUND = 2                       # the last cubes of a finger lose their side edges: a rounded glove tip
 
+# ---- the steel plates (step 2; the under-glove approved by Tefa 2026-10-18: "looks about right to me") ----
+# Each finger and thumb segment gets its own plate: its top row and upper sides turned to steel, plus one raised row,
+# with brown left bare at every joint so the plates read as separate pieces, as in the picture.
+PLATE_GAP = 1                       # bare brown steps at each joint, between two plates
+KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2)      # one plate over each finger's knuckle
+BACK_PLATE = dict(x0=-10, x1=11, y0=4, y1=20, corner=3)            # the big plate on the back of the hand
+BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2)          # a smaller one stacked on it
+RIVETS = [(-8, 6), (9, 6), (-8, 18), (9, 18)]                      # bright bolt heads at the big plate's corners
+
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
+    steel=(58, 66, 74),             # dark blue-grey steel
+    steel_dark=(34, 38, 44),        # plate sides and undersides
+    steel_hi=(104, 112, 122),       # the leading edge of each plate, catching the light
+    rivet=(140, 146, 152),
     under=(92, 54, 34),             # brown leather
     under_dark=(62, 36, 23),        # creases at the joints, the palm's lines
     under_hi=(120, 74, 47),         # worn ridges (knuckles)
