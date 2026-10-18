@@ -33,6 +33,7 @@ GRAIN_WAVE = (2.0, 9.0)                                 # how far a grain line w
 # the barrel leading up to it bulky and square") ----
 RECEIVER = dict(x0=0, x1=96, y=6, z0=-8, z1=18, bevel=1)      # ~33 cm long, ~9 cm tall, ~4 cm wide
 PORT = dict(x0=30, x1=54, z0=8, z1=14)                        # ejection port, on the right side (as in the Ashes gun)
+BOLTS = dict(start=4, end_gap=3, step=23, z=3)                # big square bolt heads along the receiver's lower sides
 BARREL = dict(x0=96, x1=204, y=4, z0=10, z1=18)               # square and bulky, ~37 cm
 MUZZLE = dict(x0=205, x1=214, zc=14, r=4.6, bore=2.0)         # the round tip
 RIB = dict(z=19, y=1, notch_step=6)                           # the vent rib along the barrel's top
