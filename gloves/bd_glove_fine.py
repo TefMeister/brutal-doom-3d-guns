@@ -9,7 +9,7 @@ import edit_small as small
 import bd_glove_pose
 from bd_fine import Gun, Detail
 from bd_glove_settings import (BACK_PLATE, KNUCKLE_PLATE, FINGERS, ARMOUR_CUFF, STRAP, BUCKLE, CUFF_PANEL, VOXEL_M,
-                               RIGHT_POSE, LEFT_POSE, SLAYER_MARK, PLATE_GROOVE, KNUCKLE_STUD, STITCH, CUFF_VENTS,
+                               SLAYER_MARK, PLATE_GROOVE, KNUCKLE_STUD, STITCH, CUFF_VENTS,
                                FINE_COL, COL)
 from slayer_mark import MARK
 
@@ -33,10 +33,10 @@ class Hand:
         sub = tuple(p % F for p in P)
         if self.side == 'right':                                     # the axes of bd_glove_pose._right_axes
             x, y, z = bd_glove_pose._right_axes(*cell)
-            shift, gs = RIGHT_POSE['shift'], (sub[1], F - 1 - sub[2], F - 1 - sub[0])
+            shift, gs = bd_glove_pose.RIGHT['shift'], (sub[1], F - 1 - sub[2], F - 1 - sub[0])
         else:                                                        # and _left_axes
             x, y, z = bd_glove_pose._left_axes(*cell)
-            shift, gs = LEFT_POSE['shift'], (sub[0], F - 1 - sub[1], F - 1 - sub[2])
+            shift, gs = bd_glove_pose.LEFT['shift'], (sub[0], F - 1 - sub[1], F - 1 - sub[2])
         return self.g.at(F * (x + shift[0]) + gs[0], F * (y + shift[1]) + gs[1], F * (z + shift[2]) + gs[2])
 
     def mirror(self, X):

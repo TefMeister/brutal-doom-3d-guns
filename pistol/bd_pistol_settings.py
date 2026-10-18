@@ -18,6 +18,9 @@ from cube_size import VOXEL_M     # ONE cube size for every cube model (3.4 mm),
 ROUND_SLACK = 0.3                 # a cube is inside a circle when its distance squared is under r * r plus this,
                                   # the same rounding as the kit's tubes (parts.py)
 PIVOT = (10, 0.5, 28)             # the top of the grip, the same point as the Ashes pistol's
+# Doomguy's right glove on the grip (Tefa, 2026-10-18), the shotgun's right-hand pose moved by how far this grip's top
+# front (20, 28) is from the shotgun's (13, -7), leaning with this grip (gloves/bd_glove_settings.py RIGHT_POSE)
+RIGHT_HAND = dict(shift=(3, 0, 26), rake=0.2)
 
 # ---- HAND CANNON (Tefa, 2026-10-18: "yes go over the top to make it into a hand cannon") ----
 # Everything below was made bigger after the first look: a taller, wider slide, a heavy compensator with ports on the

@@ -32,22 +32,25 @@ NAMES = {"right": "BD_glove_right", "left": "BD_glove_left"}
 ASHES_HANDS = ("Hand_right_hand", "Hand_right_thumb", "Hand_right_tip", "Hand_left_hand", "Hand_left_thumb")
 
 
-def run(atlas_dir):
-    col = bpy.data.collections.get(COLLECTION) or bpy.data.collections.new(COLLECTION)
+def run(atlas_dir, gun_parts=None, pivot=PIVOT, right=None, left=None, sides=('right', 'left'), names=NAMES,
+        collection=COLLECTION, root_name=ROOT, atlas="bd_gloves_atlas.png"):
+    """The shotgun's gloves by default. Another gun passes its parts ({part: cells}), its pivot, its poses (see
+    bd_glove_pose.use), which hands, and its own object names, collection and atlas file."""
+    col = bpy.data.collections.get(collection) or bpy.data.collections.new(collection)
     if col.name not in bpy.context.scene.collection.children:
         bpy.context.scene.collection.children.link(col)
     for o in list(col.objects):
         bpy.data.objects.remove(o)
-    root = bpy.data.objects.new(ROOT, None)
+    root = bpy.data.objects.new(root_name, None)
     col.objects.link(root)
     gun = set()
-    for cells in bd_gun.build().p.values():
+    for cells in (gun_parts or bd_gun.build().p).values():
         gun |= set(cells)
-    posed = bd_glove_pose.gloves(gun)
-    specs = [(NAMES[k], {c: COL[n] for c, n in v.items()}, PIVOT) for k, v in posed.items()]
+    bd_glove_pose.use(right, left)
+    posed = bd_glove_pose.gloves(gun, sides)
+    specs = [(names[k], {c: COL[n] for c, n in v.items()}, pivot) for k, v in posed.items()]
     os.makedirs(atlas_dir, exist_ok=True)
-    objs = make_objects(specs, root, os.path.join(atlas_dir, "bd_gloves_atlas.png"), Space(VOXEL_M, PIVOT),
-                        SHADE, NOISE)
+    objs = make_objects(specs, root, os.path.join(atlas_dir, atlas), Space(VOXEL_M, pivot), SHADE, NOISE)
     for o in objs.values():
         for c in list(o.users_collection):
             c.objects.unlink(o)
@@ -56,7 +59,7 @@ def run(atlas_dir):
         if not bl.pick_mode_check(o, VOXEL_M):
             bl.split_to_cubes(o, VOXEL_M)
         edit.convert(o, VOXEL_M)
-    bd_glove_fine.run(posed, NAMES)                    # the small-cube detail and the Slayer's mark
+    bd_glove_fine.run(posed, names)                    # the small-cube detail and the Slayer's mark
     # each glove its own scratches: the seed is mixed with the object's name
     bd_wear.carve([o.name for o in objs.values()], WEAR, lighten=SCRATCH_LIGHTEN)
     for n in ASHES_HANDS:
