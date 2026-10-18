@@ -72,16 +72,23 @@ COL = dict(
     # The cuff, bluer than the plates (Tefa, 2026-10-18: "a bit bluer green please", "sorry i meant only the cuff
     # bit", then "just a bit bluer and colour the rest of the brown like that too"): the under-glove, brown until
     # then, takes the cuff's colour as well. Then: "that looks wrong, can you make it even darker green, than the top
-    # plate?" -> both a dark green, darker than the plates; then "even darker by 60%" -> 40% of that.
-    cuff=(12, 17, 10),
-    cuff_dark=(7, 10, 6),
-    cuff_hi=(18, 24, 15),
-    under=(12, 17, 10),             # the under-glove, the cuff's colour
-    under_dark=(7, 10, 6),          # creases at the joints, the palm's lines, the cuff's lining
-    under_hi=(17, 23, 14),          # worn ridges (knuckles)
+    # plate?" -> both a dark green, darker than the plates; then "even darker by 60%", then "doo dark now" -> about
+    # two thirds of the dark green, between the two.
+    cuff=(20, 28, 17),
+    cuff_dark=(12, 17, 10),
+    cuff_hi=(29, 40, 25),
+    under=(20, 28, 17),             # the under-glove, the cuff's colour
+    under_dark=(12, 17, 10),        # creases at the joints, the palm's lines, the cuff's lining
+    under_hi=(28, 38, 24),          # worn ridges (knuckles)
 )
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.62, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.78, (-1, 0, 0): 0.78}
 NOISE = 0.04
 
-SHOW_AT = (0.30, 0.10, 0.0)         # Blender metres: where the glove sits, beside the shotgun, while it is shaped
+# Carved scratches, as on the shotgun (Tefa, 2026-10-18: "gloves need to have carved scratches too"): the kit's
+# smallest cubes dug out, steel showing in the cut. Shorter than the gun's, the plates being small.
+WEAR = dict(seed=667, scratch_per_cm2=0.08, scratch_mm=(5.0, 18.0), along_share=0.6, gouge_share=0.1,
+            zigzag_share=0.35)
+BARE = (58, 66, 74)                 # inside a cut: the steel under the green paint
+
+SHOW_AT = (0.30, 0.10, 0.0)        # Blender metres: where the glove sits, beside the shotgun, while it is shaped
