@@ -30,16 +30,16 @@ THUMB_W, THUMB_T = 7, 6
 THUMB_SEGS = [(14, 56, 6), (12, 30, 24)]   # (length, degrees outward from +y, degrees down)
 
 
-# ---- the under-glove: brown leather over the whole hand, fingers and thumb included ----
+# ---- the under-glove: leather over the whole hand (blue-green since 2026-10-18, see COL), fingers and thumb included ----
 CREASE = 1                          # a darker line this many cubes long at each finger joint
 TIP_ROUND = 2                       # the last cubes of a finger lose their side edges: a rounded glove tip
 
 # ---- the steel plates (step 2; the under-glove approved by Tefa 2026-10-18: "looks about right to me") ----
 # Each finger and thumb segment gets its own plate: its top row and upper sides turned to steel, plus one raised row,
-# with brown left bare at every joint so the plates read as separate pieces, as in the picture.
+# with the under-glove left bare at every joint so the plates read as separate pieces, as in the picture.
 # Tefa, 2026-10-18, on the first plates: "little bit bulkier please" -> one cube thicker, overhanging the fingers'
 # sides, and a bigger back plate.
-PLATE_GAP = 1                       # bare brown steps at each joint, between two plates
+PLATE_GAP = 1                       # bare under-glove steps at each joint, between two plates
 PLATE_RAISE = 2                     # cubes a plate stands above the glove
 PLATE_OVERHANG = 1                  # cubes a finger plate reaches past each side of the finger
 KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2, raise_=PLATE_RAISE)   # over each finger's knuckle
@@ -69,13 +69,15 @@ COL = dict(
     green=(50, 66, 38),             # dark green armour
     green_dark=(30, 40, 23),
     green_hi=(76, 96, 56),
-    cuff=(44, 66, 52),              # the cuff only, a bit bluer (Tefa, 2026-10-18: "a bit bluer green please",
-    cuff_dark=(26, 40, 32),         # then "sorry i meant only the cuff bit")
-    cuff_hi=(68, 96, 78),
-    under=(92, 54, 34),             # brown leather
-    under_dark=(62, 36, 23),        # creases at the joints, the palm's lines
-    under_hi=(120, 74, 47),         # worn ridges (knuckles)
-    seam=(40, 24, 16),              # stitching where the cuff joins
+    # The cuff, bluer than the plates (Tefa, 2026-10-18: "a bit bluer green please", "sorry i meant only the cuff
+    # bit", then "just a bit bluer and colour the rest of the brown like that too"): the under-glove, brown until
+    # then, takes the cuff's colour as well.
+    cuff=(38, 62, 64),
+    cuff_dark=(22, 38, 40),
+    cuff_hi=(60, 92, 94),
+    under=(38, 62, 64),             # the under-glove, the cuff's colour
+    under_dark=(24, 40, 42),        # creases at the joints, the palm's lines, the cuff's lining
+    under_hi=(54, 84, 86),          # worn ridges (knuckles)
 )
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.62, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.78, (-1, 0, 0): 0.78}
