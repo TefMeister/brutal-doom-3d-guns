@@ -46,6 +46,9 @@ KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2, raise_=PLATE_RAISE)
 BACK_PLATE = dict(x0=-11, x1=12, y0=3, y1=21, corner=3, raise_=PLATE_RAISE)        # the big plate on the back
 BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2, raise_=1)                # a smaller one stacked on it
 RIVETS = [(-9, 5), (10, 5), (-9, 19), (10, 19)]                    # bright bolt heads at the big plate's corners
+# Tefa, 2026-10-18, on the bulkier plates: "thats good, now needs other parts to be dark green too". Which plates are
+# dark green (the rest stay steel): 'knuckle', 'back', 'back_top'.
+GREEN_PLATES = ('knuckle', 'back', 'back_top')
 
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
@@ -53,6 +56,9 @@ COL = dict(
     steel_dark=(34, 38, 44),        # plate sides and undersides
     steel_hi=(104, 112, 122),       # the leading edge of each plate, catching the light
     rivet=(140, 146, 152),
+    green=(50, 66, 38),             # dark green armour
+    green_dark=(30, 40, 23),
+    green_hi=(76, 96, 56),
     under=(92, 54, 34),             # brown leather
     under_dark=(62, 36, 23),        # creases at the joints, the palm's lines
     under_hi=(120, 74, 47),         # worn ridges (knuckles)
