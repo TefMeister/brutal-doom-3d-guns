@@ -5,7 +5,7 @@
 import math
 
 from bd_settings import (STOCK_X, STOCK_TOP, STOCK_BOTTOM, STOCK_HALF_WIDTH, BUTT_PAD, GRAIN_STEP, GRAIN_WAVE,
-                         RECEIVER, PORT, BARREL, MUZZLE, RIB, SIGHT, MAGTUBE, MAGCAP, CLAMP, PUMP, ACTION_BARS,
+                         RECEIVER, PORT, BOLTS, BARREL, MUZZLE, RIB, SIGHT, MAGTUBE, MAGCAP, CLAMP, PUMP, ACTION_BARS,
                          GUARD, TRIGGER)
 from parts import Parts
 
@@ -60,9 +60,10 @@ def receiver(g):
     P = PORT
     g.cut(P['x0'], P['x1'], -R['y'], -R['y'], P['z0'], P['z1'])                    # ejection port, right side
     g.fill('body', P['x0'], P['x1'], -R['y'] + 1, -R['y'] + 1, P['z0'], P['z1'], 'port')
-    for x in range(R['x0'] + 4, R['x1'] - 3, 23):                                    # big square bolts, both sides
+    b = BOLTS
+    for x in range(R['x0'] + b['start'], R['x1'] - b['end_gap'], b['step']):         # big square bolts, both sides
         for yy in (-R['y'] - 1, R['y'] + 1):
-            g.fill('body', x, x + 1, yy, yy, R['z0'] + 3, R['z0'] + 4, 'metal_hi')
+            g.fill('body', x, x + 1, yy, yy, R['z0'] + b['z'], R['z0'] + b['z'] + 1, 'metal_hi')
 
 
 def barrel(g):
