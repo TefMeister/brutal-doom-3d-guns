@@ -41,8 +41,8 @@ def hiss(length, loud, bright, sputter, rng):
     env = np.minimum(1, t / ATTACK_S)                           # burst in
     fade = max(1, int(n * TAIL))
     env[-fade:] *= np.linspace(1, 0, fade) ** 2                  # die away
-    env *= 1 - PRESSURE_DROP * t / length                                # pressure dropping
-    flutter = one_pole(rng.uniform(-1, 1, n), SPUTTER_HZ)               # the steam sputtering
+    env *= 1 - PRESSURE_DROP * t / length                      # pressure dropping
+    flutter = one_pole(rng.uniform(-1, 1, n), SPUTTER_HZ)       # the steam sputtering
     flutter /= max(1e-9, np.abs(flutter).max())
     env *= 1 + sputter * flutter
     x *= env
