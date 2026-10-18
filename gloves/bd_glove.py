@@ -6,7 +6,7 @@ import math
 from bd_glove_settings import (PALM_W, PALM_L, PALM_T, PALM_CORNER, DOME, EDGE_ROUND, TAPER, FINGERS, FINGER_W,
                                FINGER_T, CURL, SPLAY, THUMB_BASE, THUMB_W, THUMB_T, THUMB_SEGS, CUFF_L, CUFF_W,
                                CREASE, TIP_ROUND, PLATE_GAP, PLATE_RAISE, PLATE_OVERHANG, KNUCKLE_PLATE, BACK_PLATE,
-                               BACK_PLATE_TOP, RIVETS)
+                               BACK_PLATE_TOP, RIVETS, GREEN_PLATES)
 
 
 def _plate_steps(segs, start=1):
@@ -138,9 +138,9 @@ def _top(cells, x, y):
     return max(zs) if zs else None
 
 
-def _plate(cells, xs, ys, corner, lead_y, raise_):
-    """A plate lying on the back of the hand: the top cube of every column turned to steel, `raise_` rows on it,
-    corners rounded, and its knuckle-side edge (lead_y) catching the light."""
+def _plate(cells, xs, ys, corner, lead_y, raise_, metal='steel'):
+    """A plate lying on the back of the hand: the top cube of every column turned to `metal` (steel or green),
+    `raise_` rows on it, corners rounded, and its knuckle-side edge (lead_y) catching the light."""
     x0, x1, y0, y1 = xs[0], xs[-1], ys[0], ys[-1]
     for x in xs:
         for y in ys:
@@ -151,22 +151,26 @@ def _plate(cells, xs, ys, corner, lead_y, raise_):
             if z is None:
                 continue
             edge = cx == 0 or cy == 0
-            cells[(x, y, z)] = 'steel_dark' if edge else 'steel'
+            cells[(x, y, z)] = metal + '_dark' if edge else metal
             for r in range(1, raise_ + 1):
                 if r == raise_ and y == lead_y:
-                    c = 'steel_hi'
+                    c = metal + '_hi'
                 else:
-                    c = 'steel_dark' if edge else 'steel'
+                    c = metal + '_dark' if edge else metal
                 cells[(x, y, z + r)] = c
 
 
 def _plates(cells):
+    def metal(name):
+        return 'green' if name in GREEN_PLATES else 'steel'
+
     K = KNUCKLE_PLATE
     for _name, xc, _y0, _len in FINGERS:
         _plate(cells, range(xc - K['half_w'], xc + K['half_w'] + 1), range(K['y0'], K['y1'] + 1), 1, K['y1'],
-               K['raise_'])
-    for P in (BACK_PLATE, BACK_PLATE_TOP):
-        _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'])
+               K['raise_'], metal('knuckle'))
+    for name, P in (('back', BACK_PLATE), ('back_top', BACK_PLATE_TOP)):
+        _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'],
+               metal(name))
     for x, y in RIVETS:
         cells[(x, y, _top(cells, x, y) + 1)] = 'rivet'
 
