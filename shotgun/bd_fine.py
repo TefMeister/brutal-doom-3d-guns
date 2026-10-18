@@ -34,6 +34,10 @@ class Gun:
         if miss:
             raise RuntimeError("gun cubes and the Blender object do not line up (%d of 500 missing)" % miss)
 
+    def at(self, X, Y, Z):
+        """Fine position of the quarter cube at gun quarter-cube position (X, Y, Z), all whole numbers."""
+        return (F * self.b + F - 1 - Y, X + F * self.a, Z + F * self.c)
+
     def fine(self, x, y, z):
         """Fine position of the quarter cube at gun cubes (x, y, z), each a float."""
         X, Y, Z = int(round(x * F)), int(round(y * F)), int(round(z * F))

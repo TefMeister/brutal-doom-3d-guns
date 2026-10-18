@@ -7,7 +7,7 @@ from bd_glove_settings import (PALM_W, PALM_L, PALM_T, PALM_CORNER, DOME, EDGE_R
                                FINGER_T, CURL, SPLAY, THUMB_BASE, THUMB_W, THUMB_T, THUMB_SEGS,
                                CREASE, TIP_ROUND, PLATE_GAP, PLATE_RAISE, PLATE_OVERHANG, KNUCKLE_PLATE, BACK_PLATE,
                                BACK_PLATE_TOP, RIVETS, GREEN_PLATES, JOINT_RAISE, ARMOUR_CUFF,
-                               CUFF_BANDS, CUFF_PANEL, CUFF_RIVETS)
+                               CUFF_BANDS, CUFF_PANEL, CUFF_RIVETS, THUMB_PAD, PALM_LINES, LEATHER_PALM, STRAP, BUCKLE)
 
 FINGER_METAL = 'green' if 'finger' in GREEN_PLATES else 'steel'
 
@@ -48,7 +48,7 @@ def _chain(cells, xc, w, t, start, segs, colour_at, plates=None, metal='steel'):
                     side_x = ix in (cx - w // 2, cx - w // 2 + w - 1)
                     if side_x and (tip or iz in (cz - t // 2, cz - t // 2 + t - 1)):
                         continue                                     # rounded finger, rounder at the tip
-                    cells[(ix + xc, cy, iz)] = colour_at(step, iz == cz - t // 2 + t - 1)
+                    cells[(ix + xc, cy, iz)] = colour_at(step, iz == cz - t // 2 + t - 1, iz == cz - t // 2)
             kind = (plates or {}).get(step)
             top = cz - t // 2 + t - 1
             if kind == 'joint':
@@ -84,7 +84,9 @@ def _finger(cells, name, xc, y0, length, curl=None):
             (length - length * 4 // 10 - length * 3 // 10, 0, a + b + c)]
     joints = _joints(segs)
 
-    def colour_at(step, top):
+    def colour_at(step, top, bottom):
+        if bottom and LEATHER_PALM:
+            return 'leather_dark' if any(j <= step < j + CREASE for j in joints) else 'leather'
         if any(j <= step < j + CREASE for j in joints) and top:
             return 'under_dark'
         return 'under_hi' if step == 0 and top else 'under'
@@ -97,7 +99,9 @@ def _thumb(cells, path=None, base=None, size=None):
     segs = [(n, -side, down) for n, side, down in (path or THUMB_SEGS)]   # -side: out towards -x
     joints = _joints(segs)
 
-    def colour_at(step, top):
+    def colour_at(step, top, bottom):
+        if bottom and LEATHER_PALM:
+            return 'leather'
         return 'under_dark' if any(j <= step < j + CREASE for j in joints) and top else 'under'
 
     bx, by, bz = base or THUMB_BASE
@@ -125,35 +129,60 @@ def _slab(cells, y0, y1, half_w, thick, corner, colour_at, dome=0, taper=0):
 def _palm(cells):
     hw = PALM_W // 2
 
+    L = PALM_LINES
+    palm = 'leather' if LEATHER_PALM else 'under'
+    palm_dark = 'leather_dark' if LEATHER_PALM else 'under_dark'
+
     def colour_at(x, y, z, top, bottom):
-        if bottom and abs(x) == 4 and 3 <= y <= PALM_L - 4:
-            return 'under_dark'                                      # the palm's lines
+        if bottom and abs(x) == L['x'] and L['y0'] <= y <= L['y1']:
+            return palm_dark                                         # the palm's lines
+        if bottom:
+            return palm
         if top and y == PALM_L - 1 and abs(x) < hw - 2:
             return 'under_hi'                                        # the knuckle ridge
         return 'under'
 
     _slab(cells, 0, PALM_L, hw, PALM_T, PALM_CORNER, colour_at, dome=DOME, taper=TAPER)
-    for y in range(1, 16):                                           # the pad of the thumb, low and wide
-        r = (y - 8) / 7.0
-        reach = 5 * math.sqrt(max(0.0, 1 - r * r))
-        for x in range(-hw - 5, -hw + 1):
+    T = THUMB_PAD
+    z_lo = -PALM_T // 2 + 1
+    for y in range(T['y0'], T['y1'] + 1):                            # the pad of the thumb, low and wide
+        r = (y - T['yc']) / float(T['ry'])
+        reach = T['reach'] * math.sqrt(max(0.0, 1 - r * r))
+        for x in range(-hw - T['reach'], -hw + 1):
             if abs(x + hw) > reach:
                 continue
-            for z in range(-PALM_T // 2 + 1, PALM_T // 2 - 1):
-                cells[(x, y, z)] = 'under'
+            for z in range(z_lo, PALM_T // 2 - 1):
+                cells[(x, y, z)] = palm if z == z_lo else 'under'
 
 
 def _cuff(cells):
     C = ARMOUR_CUFF
+
+    S = STRAP
 
     def colour_at(x, y, z, top, bottom):
         if y == C['y0']:
             return 'under_dark'                                      # the leather lining at the open end
         if y in CUFF_BANDS:
             return 'gunmetal_hi' if top else 'gunmetal'
+        if S['y0'] <= y <= S['y1']:
+            return 'leather'
         return 'cuff'
 
     _slab(cells, C['y0'], C['y1'], C['half_w'], C['thick'], C['corner'], colour_at)
+    strap = [c for c in cells if S['y0'] <= c[1] <= S['y1']]          # the strap stands one cube proud all round
+    for x, y, z in strap:
+        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            n = (x + dx, y, z + dz)
+            if n not in cells:
+                cells[n] = 'leather_hi' if dz == 1 else 'leather'
+    B = BUCKLE
+    for x in range(B['x0'], B['x1'] + 1):                            # a square steel frame on top of the strap
+        for y in range(B['y0'], B['y1'] + 1):
+            if x in (B['x0'], B['x1']) or y in (B['y0'], B['y1']):
+                z = _top(cells, x, y)
+                if z is not None:
+                    cells[(x, y, z + 1)] = 'steel_hi' if y == B['y1'] else 'steel'
     P = CUFF_PANEL
     _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'],
            'cuff')
@@ -188,7 +217,7 @@ def _plate(cells, xs, ys, corner, lead_y, raise_, metal='steel'):
                 cells[(x, y, z + r)] = c
 
 
-def _plates(cells):
+def _plates(cells, back_top=True):
     def metal(name):
         return 'green' if name in GREEN_PLATES else 'steel'
 
@@ -196,19 +225,20 @@ def _plates(cells):
     for _name, xc, _y0, _len in FINGERS:
         _plate(cells, range(xc - K['half_w'], xc + K['half_w'] + 1), range(K['y0'], K['y1'] + 1), 1, K['y1'],
                K['raise_'], metal('knuckle'))
-    for name, P in (('back', BACK_PLATE), ('back_top', BACK_PLATE_TOP)):
+    for name, P in (('back', BACK_PLATE), ('back_top', BACK_PLATE_TOP))[:2 if back_top else 1]:
         _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'],
                metal(name))
     for x, y in RIVETS:
         cells[(x, y, _top(cells, x, y) + 1)] = 'rivet'
 
 
-def right_glove(curls=None, thumb=None, thumb_base=None, thumb_size=None):
-    """Relaxed and flat by default; curls ({finger: (a, b, c) degrees}) and a thumb path pose it round a gun."""
+def right_glove(curls=None, thumb=None, thumb_base=None, thumb_size=None, back_top=True):
+    """Relaxed and flat by default; curls ({finger: (a, b, c) degrees}) and a thumb path pose it round a gun.
+    back_top=False leaves off the small plate stacked on the back plate (the left glove: the Slayer mark goes there)."""
     cells = {}
     _palm(cells)
     _cuff(cells)
-    _plates(cells)
+    _plates(cells, back_top)
     curls = curls or {}
     for name, xc, y0, length in FINGERS:
         _finger(cells, name, xc, y0, length, curls.get(name))

@@ -35,6 +35,7 @@ def gloves(blocked):
     """{'right': cells, 'left': cells} in gun space, never inside `blocked` (the gun's own cubes)."""
     R, L = RIGHT_POSE, LEFT_POSE
     right = right_glove(curls=R['curls'], thumb=R['thumb'])
-    left = left_glove(curls=L['curls'], thumb=L['thumb'], thumb_base=L['thumb_base'], thumb_size=L['thumb_size'])
+    left = left_glove(curls=L['curls'], thumb=L['thumb'], thumb_base=L['thumb_base'], thumb_size=L['thumb_size'],
+                      back_top=False)
     return {'right': _place(right, _right_axes, R['shift'], blocked),
             'left': _place(left, _left_axes, L['shift'], blocked)}
