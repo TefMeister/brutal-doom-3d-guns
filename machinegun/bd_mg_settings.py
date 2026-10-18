@@ -3,7 +3,9 @@
 # slotted muzzle brake; and a black sci-fi heavy MG with a long shroud and side tube, a box magazine and a skeleton
 # stock): "make a mash of these two, keep the red tones, but make it look like dried blood stains on the machine gun
 # all over". So: the black MG's long layout and box magazine, the red gun's chunky receiver, box sight, ammo window
-# and muzzle brake, grey panels from the red gun, and the red only as dried blood, stained, dripped and spattered.
+# and muzzle brake, grey panels from the red gun. The blood was tried and dropped (Tefa: "the blood stains dont fit,
+# please just use the dark red colours from the picture"): the red is the picture's worn dark red paint instead, on
+# the grip, box sight, stock sides, handguard and front block, its edges worn lighter. The blood code is in git history.
 # Voxel axes, as in every cubekit gun: x = rear -> muzzle, y = width (+ = the gun's LEFT side), z = up.
 import os
 import sys
@@ -45,12 +47,6 @@ BRAKE = dict(x0=289, x1=306, y=5, z0=13, z1=23, bevel=2, slots=((292, 294), (298
 FRONT_SIGHT = dict(x0=252, x1=253, y=1, z1=34, ears_y=4, ears_z1=33, ears_x=(251, 254))   # its top in the middle of
                                                                                      # BOX_SIGHT's tunnel
 
-# ---- dried blood (Tefa: "keep the red tones, but make it look like dried blood stains on the machine gun all
-# over"): blotches with darker rims, runs dripping down the sides, and spatter. Not on the sight dots.
-BLOOD = dict(seed=666, side_stains=34, top_stains=10, radius=(2.0, 7.0), wobble=(0.35, 0.2), rim=0.78,
-             drip_share=0.6, drips=(1, 3), drip_len=(3, 14), spatter=(2, 6), spatter_reach=(1.2, 2.6))
-BLOOD_SKIP = ('port', 'bore', 'sight_dot', 'brass', 'brass_hi')
-
 # ---- fine detail with the kit's smallest cubes (0.85 mm), the shotgun's and pistol's way ----
 FINE_LINES = [   # cut one small cube deep: (part, side, y, [(x, z) corners, joined])
     ('body', 'both', 7, [(60, 6.5), (125, 6.5), (130, 2.5), (164, 2.5)]),
@@ -67,8 +63,7 @@ FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
     ('body', 'both', 6, 228, 27, ("#....", "###..", "#####", "###..", "#...."), 2, 'red'),    # the black MG's
     ('body', 'both', 7, 82, 20, ("#.#.#.#.#.#", ".#.#.#.#.#."), 2, 'caution'),               # red markers; hazard
 ]
-FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36),
-                spatter=(44, 10, 7))
+FINE_COL = dict(line=(6, 6, 7), screw=(52, 54, 58), red=(150, 20, 16), caution=(196, 150, 36))
 
 WEAR = dict(seed=1066, scratch_per_cm2=0.04, scratch_mm=(8.0, 32.0), along_share=0.75, gouge_share=0.1,
             zigzag_share=0.35)
@@ -83,19 +78,18 @@ COL = dict(
     panel=(62, 64, 68),           # the red gun's grey parts (lighter read near white)
     panel_dark=(44, 46, 50),
     rubber=(12, 12, 13),
-    grip=(16, 16, 18),
-    grip_ridge=(28, 28, 31),
     port=(9, 9, 10),
     bore=(4, 4, 4),
     brass=(170, 130, 60),
     brass_hi=(206, 166, 86),
     caution=(196, 150, 36),
     sight_dot=(235, 235, 228),
-    blood=(62, 14, 9),            # dried: brown-red, darker at the rims (brighter read as fresh paint)
-    blood_mid=(76, 19, 11),
-    blood_dark=(38, 8, 6),
+    red=(104, 30, 28),            # the picture's dark red paint
+    red_hi=(138, 52, 46),         # its worn edges
+    red_dark=(72, 20, 18),
 )
-EDGE_WEAR = 0.6
+EDGE_WEAR = 0.6                  # how far a worn edge goes toward its colour's _hi
+EDGE_HI = dict(metal='metal_hi', red='red_hi')   # the colours whose long edges wear
 
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.55, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.74, (-1, 0, 0): 0.74}

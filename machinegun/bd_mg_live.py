@@ -10,7 +10,7 @@ import bd_mg_settings
 import bd_mg_gun
 importlib.reload(bd_mg_settings)
 importlib.reload(bd_mg_gun)
-from bd_mg_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE, EDGE_WEAR
+from bd_mg_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE, EDGE_WEAR, EDGE_HI
 from bl import mix
 from bl import Space, make_objects
 
@@ -20,15 +20,15 @@ PARTS = {"body": "BDM_body", "mag": "BDM_mag", "trigger": "BDM_trigger", "charge
 
 
 def paint(cells):
-    """Colour names -> sRGB, with the metal's long edges worn lighter where two of its sides are open."""
+    """Colour names -> sRGB, with the metal's and red paint's long edges worn lighter where two sides are open."""
     out = {}
     for (x, y, z), name in cells.items():
         rgb = COL[name]
-        if name == 'metal':
+        if name in EDGE_HI:
             open_up = ((x, y, z + 1) not in cells) + ((x, y, z - 1) not in cells)
             open_side = ((x, y + 1, z) not in cells) + ((x, y - 1, z) not in cells)
             if open_up and open_side:
-                rgb = mix(rgb, COL['metal_hi'], EDGE_WEAR)
+                rgb = mix(rgb, COL[EDGE_HI[name]], EDGE_WEAR)
         out[(x, y, z)] = rgb
     return out
 
