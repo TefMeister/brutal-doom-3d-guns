@@ -19,6 +19,7 @@ ACTOR = re.compile(r"^\s*actor\s+(\w+)\s*(?::\s*(\w+))?", re.I)
 PROP = re.compile(r"^\s*(Weapon\.\w+|Inventory\.\w+|Ammo\.\w+|Tag)\s+(.+?)\s*$", re.I)
 # projectiles fired only for show (far-away sound, smoke, tracers, casings): kept out of the damage column
 COSMETIC = re.compile(r"sound|particle|tracer|smoke|case|casing|spark|flash|light|puff|empty|muzzle", re.I)
+DEFAULT_POCKET_MAX = 50        # carry limit assumed for an ammo type whose MaxAmount the files do not give
 WEAPON_BASES = {"weapon", "brutalweapon", "doomweapon"}
 # items every normal player class starts with (Rifle, Pistol, Melee and Purist all give it; only Tactical lacks it)
 NORMAL_PLAYER_ITEMS = {"isnottacticalclass": 1}
@@ -123,7 +124,7 @@ def sheet(root):
         for row, start, in_mag, in_pocket in SITUATIONS:
             inv = dict(NORMAL_PLAYER_ITEMS)
             if pocket:
-                inv[pocket] = amount(in_pocket, maxima.get(pocket, 50))
+                inv[pocket] = amount(in_pocket, maxima.get(pocket, DEFAULT_POCKET_MAX))
             if mag:
                 inv[mag] = amount(in_mag, maxima.get(mag, 1))
             r = simulate(states, labels, start, inv, maxima)
