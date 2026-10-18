@@ -4,7 +4,7 @@
 # shot), 'barrel', 'trigger', 'mag'.
 import math
 
-from bd_pistol_settings import (GRIP, GRIP_TEXTURE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER, MODULE, RING, RAIL, SLIDE,
+from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER, MODULE, RING, RAIL, SLIDE,
                                 DECK, REAR_SLOPE, WINDOW, SERRATIONS, REAR_SIGHT, FRONT_SIGHT, BARREL, MUZZLE)
 from parts import Parts
 
@@ -135,7 +135,7 @@ def slide(g):
     ri = math.ceil(M['bore'])
     for y in range(-ri, ri + 1):
         for z in range(math.floor(B['zc'] - M['bore']), math.ceil(B['zc'] + M['bore']) + 1):
-            if y * y + (z - B['zc']) ** 2 <= M['bore'] ** 2 + 0.3:
+            if y * y + (z - B['zc']) ** 2 <= M['bore'] ** 2 + ROUND_SLACK:
                 g.cut(S['x1'] - 4, M['x1'], y, y, z, z)
                 g.put('barrel', S['x1'] - 5, y, z, 'bore')
 

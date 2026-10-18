@@ -12,6 +12,8 @@ CUBEKIT = os.path.abspath(os.path.join(HERE, "..", "..", "blender-cubekit"))   #
 sys.path.insert(0, CUBEKIT)
 from cube_size import VOXEL_M     # ONE cube size for every cube model (3.4 mm), set in blender-cubekit/cube_size.py
 
+ROUND_SLACK = 0.3                 # a cube is inside a circle when its distance squared is under r * r plus this,
+                                  # the same rounding as the kit's tubes (parts.py)
 PIVOT = (6, 0.5, -12)             # the same grip point as the Ashes shotgun, so its hands fit this gun unchanged
 # The Ashes right hand is moved by this many cubes (x forward, z up) from where it held the Ashes gun's grip, onto this
 # gun's grip. Until our own Doomguy hands exist, the Ashes hand copied into this file is moved.
@@ -41,7 +43,8 @@ SPINE = dict(x0=24, x1=100, y=4, z0=18, z1=19, notch_step=4)  # notched rail alo
 REAR_SIGHT = dict(x0=64, x1=70, y=4, z0=20, z1=28, hole_z=(23, 25), hole_y=1)   # tall peep sight, square frame
 TOP_BLOCK = dict(x0=88, x1=100, y=6, z0=18, z1=22)          # the block the barrel leaves the receiver through
 PORT = dict(x0=42, x1=64, z0=3, z1=12, y_in=-2)               # ejection port, RIGHT side, cut in to y_in
-SHELL = dict(x0=47, x1=60, y=-4, zc=7, r=2.4, head=2)         # a red shell lying in the open port, brass head
+SHELL = dict(x0=47, x1=60, y=-4, zc=7, r=2.4, head=2, rim=0.4)   # a red shell lying in the open port; its brass
+                                                                 # head, `rim` cubes wider
 LOADING_PORT = dict(x0=22, x1=58, y=3, depth=2)               # slot on the underside
 TRIGGER_PLATE = dict(x0=10, x1=48, y=5, z0=-10, z1=-9)        # the frame stepping down round the trigger
 GUARD = dict(x0=14, x1=44, z_bottom=-19, y=1, lean=4)         # angular guard, its front leaning back `lean` going down
@@ -90,8 +93,9 @@ FINE_LINES = [   # panel lines: (side, y, [(x, z) corners, joined]), one small c
     ('both', 6, [(-17, 7), (-9, 0), (-17, -7)]),                             # a chevron on the rear end
     ('both', 8, [(189, -6), (212, -6)]),                                     # the muzzle block's lower part
     ('both', 10, [(189, 7), (217, 7)]),                                      # the muzzle block, under its panel
-] + [('both', 10, [(x - 0.75, 10.25), (x + 11.5, 10.25), (x + 11.5, 19.75), (x - 0.75, 19.75), (x - 0.75, 10.25)])
-     for x in (108, 124, 140, 156, 172)]                                     # a fine edge round each jacket window
+] + [('both', JACKET['r'], [(x - 0.75, W['z0'] - 0.75), (x + W['length'] + 0.5, W['z0'] - 0.75),
+                            (x + W['length'] + 0.5, W['z1'] + 0.75), (x - 0.75, W['z1'] + 0.75), (x - 0.75, W['z0'] - 0.75)])
+     for W in (JACKET['windows'],) for x in W['x']]                         # a fine edge round each jacket window
 # Tefa, 2026-10-18: "you can also use small cubes to build not just carve". So the screws stand proud, and there are
 # raised trims and the picture's little white arrow marks.
 FINE_SCREWS = [  # raised screw heads: (side, y, [(x, z) centres]); a ring of small cubes round an empty middle
