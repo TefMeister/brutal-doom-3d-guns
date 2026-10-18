@@ -52,25 +52,30 @@ LOWER_BLOCK = dict(x0=46, x1=74, y=6, z0=-12, z1=-9, lean=3)  # angular block ah
 # The front half, top to bottom as in the picture: the round barrel with a rod either side, a long flat housing, then
 # the boxy pump round the magazine tube; all of it ending in a big muzzle block. Made heavier after the first look,
 # where the front half came out much thinner than the picture's.
-BARREL = dict(x0=100, x1=218, zc=15, r=4.2)                   # round and polished, ~40 cm
-BARREL_SHINE = 1                                              # a lighter line along the barrel's top, this many cubes
+BARREL = dict(x0=100, x1=218, zc=15, r=4.2)                   # the barrel itself, round and polished, ~40 cm
+BARREL_SHINE = 1                                              # a lighter line along the jacket's top, this many cubes
                                                               # either side of its middle, so it reads round
-BARREL_RING = dict(x0=101, x1=103, r=4.8)                     # the brass ring where it leaves the receiver
-RODS = dict(x0=103, x1=187, y=6, z=17)                        # thin rods beside the barrel, both sides
-HOUSING = dict(x0=100, x1=187, y=8, z0=2, z1=10, holes=12, hole_z=6,   # long flat box under the barrel, bolt holes
-               slot=dict(x0=112, x1=170, z0=4, z1=8))                 # and a long recessed slot along each side
+BARREL_RING = dict(x0=101, x1=102, r=6)                       # the brass ring where it leaves the receiver
+# Tefa, 2026-10-18: "make the exposed barrel part even bulkier than the rest of the front parts and add factory precise
+# cut outs". So the bare barrel gets a thick hollow jacket, as wide as the muzzle block, with machined windows down
+# each side and short slots along the top; through them the barrel and its rods show inside.
+JACKET = dict(x0=103, x1=187, r=10, wall=2, cap=2,           # cap = cubes of solid end at each end
+              windows=dict(x=(108, 124, 140, 156, 172), length=11, z0=11, z1=19, y_from=7),
+              top_slot=dict(length=5, y=1, z_from=22))
+RODS = dict(x0=103, x1=187, y=6, z=17)                        # thin rods beside the barrel, inside the jacket
+HOUSING = dict(x0=100, x1=187, y=8, z0=2, z1=6, holes=12, hole_z=4)   # flat box under the jacket, bolt heads
 MAGTUBE = dict(x0=100, x1=212, zc=-2, r=4.0)
 # The second look (2026-10-18): next to the picture the pump was a slim bar; the picture's is a tall box, as deep as the
 # housing above it, with a raised rim round a sunken panel. Still dark oak.
 PUMP = dict(x0=108, x1=172, y=9, z0=-17, z1=1, round_r=6, inset=dict(x0=116, x1=164, z0=-13, z1=-2), end_bevel=2)
 ACTION_BARS = dict(x0=90, y=8, z=-4)                          # from the pump back into the receiver
 FRONT_MODULE = dict(x0=174, x1=187, y=6, z0=-12, z1=1, slots=(177, 179, 181, 183), slot_z=(-9, -1))
-SHROUD = dict(x0=188, x1=218, y=9, z0=0, z1=24, bevel=2)      # the big muzzle block, upper part
-SHROUD_LOW = dict(x0=188, x1=213, y=8, z0=-11, z1=-1, bevel=1)  # its lower part, round the magazine tube's end
-SHROUD_PANEL = dict(x0=193, x1=213, z0=4, z1=20)              # recessed panel on both sides
+SHROUD = dict(x0=188, x1=218, y=10, z0=-1, z1=27, bevel=2)    # the big muzzle block, upper part, round the jacket
+SHROUD_LOW = dict(x0=188, x1=213, y=8, z0=-11, z1=-2, bevel=1)  # its lower part, round the magazine tube's end
+SHROUD_PANEL = dict(x0=193, x1=213, z0=9, z1=23)              # recessed panel on both sides
 MUZZLE = dict(x0=219, x1=221, r=5.2, bore=3.2)                # the barrel's ring proud of the block's front
 MAG_MUZZLE = dict(x0=214, x1=215, r=4.6, bore=3.0)            # the lower hole: the magazine tube's open end
-FRONT_SIGHT = dict(x0=212, x1=214, ears=2, z0=25, z1=27)
+FRONT_SIGHT = dict(x0=212, x1=214, ears=2, z0=28, z1=30)
 
 # ---- fine detail, cut with the kit's smallest cubes (0.85 mm, a quarter cube) into the metal: bd_fine.py ----
 # Tefa, 2026-10-18: "this is where you can really utilize the different cube size combinations for finer details and
@@ -83,28 +88,38 @@ FINE_LINES = [   # panel lines: (side, y, [(x, z) corners, joined]), one small c
     ('both', 8, [(19, -3), (83, -3), (75, 11), (27, 11), (19, -3)]),         # an inner panel on each armour plate
     ('right', 8, [(40.25, 1.5), (65.75, 1.5), (65.75, 13.5), (40.25, 13.5), (40.25, 1.5)]),  # round the shell port
     ('both', 6, [(-17, 7), (-9, 0), (-17, -7)]),                             # a chevron on the rear end
-    ('both', 8, [(189, -5), (212, -5)]),                                     # the muzzle block's lower part
-    ('both', 9, [(189, 2), (217, 2)]),                                       # the muzzle block, under its panel
-]
+    ('both', 8, [(189, -6), (212, -6)]),                                     # the muzzle block's lower part
+    ('both', 10, [(189, 7), (217, 7)]),                                      # the muzzle block, under its panel
+] + [('both', 10, [(x - 0.75, 10.25), (x + 11.5, 10.25), (x + 11.5, 19.75), (x - 0.75, 19.75), (x - 0.75, 10.25)])
+     for x in (108, 124, 140, 156, 172)]                                     # a fine edge round each jacket window
 # Tefa, 2026-10-18: "you can also use small cubes to build not just carve". So the screws stand proud, and there are
 # raised trims and the picture's little white arrow marks.
 FINE_SCREWS = [  # raised screw heads: (side, y, [(x, z) centres]); a ring of small cubes round an empty middle
     ('both', 8, [(22, -1), (80, -1), (72, 9), (30, 9)]),                     # the armour plates' corners
-    ('both', 9, [(190.5, 22), (216, 22), (190.5, 0.5), (216, 0.5)]),         # the muzzle block's corners
+    ('both', 10, [(190.5, 25), (216, 25), (190.5, 1.5), (216, 1.5)]),        # the muzzle block's corners
     ('both', 6, [(94, 20)]),                                                 # the top block
     ('both', 6, [(-13, 9), (-13, -6)]),                                      # the rear end
 ]
-FINE_VENTS = dict(side='both', y=8, x0=196, x1=210, z=(6, 9, 12, 15, 18), depth=2)   # slots in the muzzle panel
+FINE_VENTS = dict(side='both', y=9, x0=196, x1=210, z=(11, 14, 17, 20), depth=2)   # slots in the muzzle panel
 FINE_TRIMS = [   # raised strips one small cube proud: (side, y, [(x, z) corners, joined])
     ('both', 6, [(89, 21.5), (99, 21.5)]),                                   # the top block's upper edge
-    ('both', 8, [(103, 10.5), (186, 10.5)]),                                 # the housing's top edge
     ('both', 6, [(176, 1.5), (186, 1.5)]),                                   # over the front module's slots
 ]
+# The gun's serial number, carved and worn, on the right of the muzzle block below its panel (Tefa, 2026-10-18: "a
+# carved worn number SG00376 on the right side of the front bulky bit"). A 3 x 5 letter shape, each dot 2 x 2 small
+# cubes (1.7 mm), one small cube deep; `wear` = share of small cubes left uncut, so it reads worn.
+FINE_NUMBER = dict(text="SG00376", side='right', y=10, x=194, z_top=5, dot=2, gap=2, wear=0.15, seed=376)
+FONT = {   # rows top to bottom
+    'S': ("111", "100", "111", "001", "111"), 'G': ("111", "100", "101", "101", "111"),
+    '0': ("111", "101", "101", "101", "111"), '3': ("111", "001", "111", "001", "111"),
+    '6': ("111", "100", "111", "101", "111"), '7': ("111", "001", "001", "010", "010"),
+}
 FINE_MARKS = [   # little raised arrow marks, white like the picture's: (side, y, x, z, points down?)
     ('both', 7, 92, 13, True),
     ('both', 8, 32, 5, False),
 ]
-FINE_COL = dict(line=(8, 8, 9), screw=(70, 72, 78), vent=(5, 5, 5), trim=(56, 58, 63), mark=(190, 190, 184))
+FINE_COL = dict(line=(8, 8, 9), screw=(70, 72, 78), vent=(5, 5, 5), trim=(56, 58, 63), mark=(190, 190, 184),
+                number=(64, 65, 70))   # the number's cuts: bare metal, lighter than the black so it reads
 
 # ---- colours, sRGB 0-255 ----
 # Tefa, 2026-10-18: nearly black metal, DARK OAK wood, "almost unrealistically beefy, dangerous and cool".
