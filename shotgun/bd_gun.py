@@ -6,7 +6,7 @@
 # pump), 'trigger'.
 import math
 
-from bd_settings import (GRIP, GRAIN_STEP, GRAIN_WAVE, REAR_STUB, RECEIVER, REAR_STEP, NOSE_CHAMFER, SIDE_PLATE, SPINE, REAR_SIGHT, TOP_BLOCK, PORT, SHELL,
+from bd_settings import (ROUND_SLACK, GRIP, GRAIN_STEP, GRAIN_WAVE, REAR_STUB, RECEIVER, REAR_STEP, NOSE_CHAMFER, SIDE_PLATE, SPINE, REAR_SIGHT, TOP_BLOCK, PORT, SHELL,
                          LOADING_PORT, TRIGGER_PLATE, LOWER_BLOCK, GUARD, TRIGGER, BARREL, BARREL_SHINE, BARREL_RING,
                          JACKET, RODS, HOUSING, MAGTUBE, PUMP, ACTION_BARS, FRONT_MODULE, SHROUD, SHROUD_LOW, SHROUD_PANEL,
                          MUZZLE, MAG_MUZZLE, FRONT_SIGHT)
@@ -69,7 +69,7 @@ def hole(g, x0, x1, zc, r):
     ri = math.ceil(r)
     for y in range(-ri, ri + 1):
         for z in range(math.floor(zc - r), math.ceil(zc + r) + 1):
-            if y * y + (z - zc) ** 2 <= r * r + 0.3:
+            if y * y + (z - zc) ** 2 <= r * r + ROUND_SLACK:
                 g.cut(x0, x1, y, y, z, z)
                 if g.owned((x0 - 1, y, z)):
                     g.put('body', x0 - 1, y, z, 'bore')
@@ -116,7 +116,7 @@ def receiver(g):
     recolour(g, P['x0'] - 1, P['x0'] - 1, -R['y'], P['y_in'], P['z0'], P['z1'], 'metal_hi')   # the bolt's face
     H = SHELL                                                          # a shell on its way out
     g.tube('body', H['x0'] + H['head'], H['x1'], H['zc'], H['r'], 'shell', yc=H['y'])
-    g.tube('body', H['x0'], H['x0'] + H['head'] - 1, H['zc'], H['r'] + 0.4, 'shell_brass', yc=H['y'])
+    g.tube('body', H['x0'], H['x0'] + H['head'] - 1, H['zc'], H['r'] + H['rim'], 'shell_brass', yc=H['y'])
     L = LOADING_PORT
     g.cut(L['x0'], L['x1'], -L['y'], L['y'], R['z0'], R['z0'] + L['depth'] - 1)
     recolour(g, L['x0'], L['x1'], -L['y'], L['y'], R['z0'] + L['depth'], R['z0'] + L['depth'], 'port')
@@ -151,11 +151,11 @@ def jacket(g):
         for y in range(-r, r + 1):
             for z in range(math.floor(zc - r), math.ceil(zc + r) + 1):
                 d2 = y * y + (z - zc) ** 2
-                if d2 > r * r + 0.3 or (not solid and d2 < inner * inner):
+                if d2 > r * r + ROUND_SLACK or (not solid and d2 < inner * inner):
                     continue
                 g.put('body', x, y, z, 'port' if not solid and d2 < (inner + 1) ** 2 else 'polish')
     for y in range(-BARREL_SHINE, BARREL_SHINE + 1):                   # the shine along its top
-        z = math.floor(zc + math.sqrt(J['r'] ** 2 + 0.3 - y * y))
+        z = math.floor(zc + math.sqrt(J['r'] ** 2 + ROUND_SLACK - y * y))
         recolour(g, J['x0'] + 1, J['x1'] - 1, y, y, z, z, 'polish_hi')
     W, T = J['windows'], J['top_slot']
     for wx in W['x']:

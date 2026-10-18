@@ -15,6 +15,8 @@ CUBEKIT = os.path.abspath(os.path.join(HERE, "..", "..", "blender-cubekit"))   #
 sys.path.insert(0, CUBEKIT)
 from cube_size import VOXEL_M     # ONE cube size for every cube model (3.4 mm), set in blender-cubekit/cube_size.py
 
+ROUND_SLACK = 0.3                 # a cube is inside a circle when its distance squared is under r * r plus this,
+                                  # the same rounding as the kit's tubes (parts.py)
 PIVOT = (10, 0.5, 28)             # the top of the grip, the same point as the Ashes pistol's
 
 # ---- the grip: raked back like the Ashes pistol's, a palm swell at the back, a flared base ----
