@@ -64,8 +64,10 @@ COL = dict(
 EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
 
 # ---- the look pass (2026-10-18, Tefa: combat scratches, dried blood, a chipped bit showing iron) ----
-# Scratches: short bright streaks scraped into the metal's outer sides and top, a few cubes long, some slanted.
-SCRATCHES = dict(count=26, length=(3, 9), seed=666)
+# Scratches: grooves CARVED one cube deep into the metal's outer sides and top, bare steel at the bottom, some slanted
+# and some two cubes wide as deeper gouges (Tefa, 2026-10-18, on painted-only streaks: "i don't really see any carved
+# out marks and scratches").
+SCRATCHES = dict(count=48, length=(5, 14), seed=666, gouge=0.3)
 COL['scratch'] = (92, 94, 99)    # bare steel showing through the black finish
 
 # per-face shade painted into the colour (not lighting), the same as the Ashes guns

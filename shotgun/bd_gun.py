@@ -113,25 +113,36 @@ def guard(g):
 
 
 def scratches(g):
-    """Scrape short streaks into the outermost black metal cube of the sides and the top, along the gun."""
+    """Carve grooves one cube deep into the black metal of the sides and the top, bare steel at the bottom."""
     S = SCRATCHES
     rnd = random.Random(S['seed'])
     body = g.p['body']
     for _ in range(S['count']):
-        x = rnd.randint(RECEIVER['x0'] + 2, BARREL['x1'] - 4)
+        x = rnd.randint(RECEIVER['x0'] + 2, BARREL['x1'] - 6)
         on_top = rnd.random() < 0.25
         side = rnd.choice((-1, 1))
-        a = rnd.randint(-3, 3) if on_top else rnd.randint(RECEIVER['z0'] + 2, RECEIVER['z1'] - 2)
+        if on_top:
+            a = rnd.randint(-3, 3)
+        elif x > RECEIVER['x1']:                                   # barrel and magazine tube
+            a = rnd.randint(MAGTUBE['z0'] + 1, BARREL['z1'] - 1)
+        else:
+            a = rnd.randint(RECEIVER['z0'] + 2, RECEIVER['z1'] - 2)
         slope = rnd.choice((-1, 0, 0, 1))
+        width = 2 if rnd.random() < S['gouge'] else 1
         for i in range(rnd.randint(*S['length'])):
-            xi, ai = x + i, a + (slope * i) // 2
-            if on_top:                                             # walk down from above to the first cube
-                cells = [(xi, ai, z) for z in range(40, -40, -1)]
-            else:                                                  # walk in from the side to the first cube
-                cells = [(xi, y * side, ai) for y in range(20, -1, -1)]
-            hit = next((c for c in cells if c in body), None)
-            if hit and body[hit] == 'metal':
-                body[hit] = 'scratch'
+            for w in range(width):
+                xi, ai = x + i, a + (slope * i) // 2 + w
+                if on_top:                                         # walk down from above to the first cube
+                    cells = [(xi, ai, z) for z in range(40, -40, -1)]
+                else:                                              # walk in from the side to the first cube
+                    cells = [(xi, y * side, ai) for y in range(20, -21, -1)]
+                k = next((n for n, c in enumerate(cells) if c in body), None)
+                if k is None or k + 1 >= len(cells):
+                    continue
+                hit, under = cells[k], cells[k + 1]
+                if body[hit] == 'metal' and body.get(under) == 'metal':
+                    del body[hit]                                  # cut out the black finish
+                    body[under] = 'scratch'                        # bare steel at the bottom of the groove
 
 
 def build():
