@@ -1,11 +1,13 @@
 # The Brutal Doom cube pistol's shape, split into parts: {part: {(x, y, z): colour name}}. No Blender here.
-# The DOOM (2016) pistol's shape (Tefa, 2026-10-18), without its glow and without a hammer.
+# The DOOM (2016) pistol's shape (Tefa, 2026-10-18), without its glow and without a hammer, then made a hand cannon
+# with a compensator and silver grip plates.
 # Parts: 'frame' (frame, grip, guard, ring module, tang - never moves), 'slide' (slide and sights - runs back on a
 # shot), 'barrel', 'trigger', 'mag'.
 import math
 
-from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER, MODULE, RING, RAIL, SLIDE,
-                                DECK, REAR_SLOPE, WINDOW, SERRATIONS, REAR_SIGHT, FRONT_SIGHT, BARREL, MUZZLE)
+from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, GRIP_PLATE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER,
+                                MODULE, RING, RAIL, SLIDE, DECK, REAR_SLOPE, WINDOW, SIDE_WINDOWS, SERRATIONS,
+                                REAR_SIGHT, FRONT_SIGHT, BARREL, COMP, MUZZLE)
 from parts import Parts
 
 
@@ -55,6 +57,16 @@ def grip(g):
                 if abs(y) == G['y'] and b + T['inset'] <= x <= f - T['inset'] and T['z0'] <= z <= T['z1']:
                     c = 'grip_check' if (x // 1 + z) % 2 == 0 and z % 2 == 0 else 'grip'   # stippled rubber
                 g.put('frame', x, y, z, c)
+    P = GRIP_PLATE                                                       # a silver plate on each side
+    for z in range(P['z0'], P['z1'] + 1):
+        x0, x1 = grip_back(z) + P['inset'], grip_front(z) - P['inset']
+        for x in range(x0, x1 + 1):
+            cx, cz = min(x - x0, x1 - x), min(z - P['z0'], P['z1'] - z)
+            if cx + cz < P['corner']:
+                continue                                                 # cut corners
+            edge = cx + cz == P['corner'] or cx == 0 or cz == 0
+            for sign in (-1, 1):
+                g.put('frame', x, sign * (G['y'] + 1), z, 'silver_dark' if edge else 'silver')
     M = MAG_BASE                                                         # flared base plate
     for z in range(M['z0'], M['z1'] + 1):
         g.fill('mag', grip_back(G['z0']) - M['over'], grip_front(G['z0']) + M['over'], -M['y'], M['y'], z, z,
@@ -114,6 +126,21 @@ def slide(g):
     W = WINDOW
     g.cut(W['x0'], W['x1'], -W['y'], W['y'], W['z0'], S['z1'])
     recolour(g, W['x0'] - 1, W['x0'] - 1, -W['y'], W['y'], W['z0'], S['z1'], 'port')
+    V = SIDE_WINDOWS                                                     # windows down the deck onto the barrel
+    for x in V['x']:
+        g.cut(x, x + V['length'] - 1, -D['y'], -D['y'], V['z0'], V['z1'])
+        g.cut(x, x + V['length'] - 1, D['y'], D['y'], V['z0'], V['z1'])
+    C = COMP                                                             # the compensator on the nose
+    box(g, 'slide', C['x0'], C['x1'], C['y'], C['z0'], C['z1'], 'metal', C['bevel'])
+    for px in C['top_ports']:
+        g.cut(px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'] + 1, C['z1'])
+        recolour(g, px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'], C['z1'] - C['port_depth'], 'port')
+    Q = C['side_ports']
+    for sign in (-1, 1):
+        y_in = C['y'] - Q['depth']
+        g.cut(Q['x0'], Q['x1'], min(sign * C['y'], sign * (y_in + 1)), max(sign * C['y'], sign * (y_in + 1)),
+              Q['z0'], Q['z1'])
+        recolour(g, Q['x0'], Q['x1'], sign * y_in, sign * y_in, Q['z0'], Q['z1'], 'port')
     E = SERRATIONS
     for x in range(E['x0'], E['x1'] + 1, E['step']):
         g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])
@@ -124,7 +151,7 @@ def slide(g):
     for y in (-R['y'] + 1, R['y'] - 1):
         g.put('slide', R['x1'], y, R['z1'] - 1, 'sight_dot')
     F = FRONT_SIGHT
-    g.fill('slide', F['x0'], F['x1'], 0, 0, S['z1'] + 1, F['z1'], 'metal')
+    g.fill('slide', F['x0'], F['x1'], 0, 0, C['z1'] + 1, F['z1'], 'metal')
     g.put('slide', F['x0'], 0, F['z1'], 'sight_dot')
     B = BARREL                                                           # copper, seen through the window
     g.tube('barrel', B['x0'], B['x1'], B['zc'], B['r'], 'copper')
@@ -132,12 +159,15 @@ def slide(g):
         g.put('barrel', x, 0, round(B['zc'] + B['r']), 'copper_hi')
     M = MUZZLE
     g.tube('barrel', M['x0'], M['x1'], B['zc'], M['r'], 'metal_hi')
-    ri = math.ceil(M['bore'])
+    ri = math.ceil(M['bore']) + 1
     for y in range(-ri, ri + 1):
-        for z in range(math.floor(B['zc'] - M['bore']), math.ceil(B['zc'] + M['bore']) + 1):
-            if y * y + (z - B['zc']) ** 2 <= M['bore'] ** 2 + ROUND_SLACK:
-                g.cut(S['x1'] - 4, M['x1'], y, y, z, z)
-                g.put('barrel', S['x1'] - 5, y, z, 'bore')
+        for z in range(math.floor(B['zc'] - ri), math.ceil(B['zc'] + ri) + 1):
+            d2 = y * y + (z - B['zc']) ** 2
+            if d2 <= M['bore'] ** 2 + ROUND_SLACK:
+                g.cut(C['x0'] + 1, M['x1'], y, y, z, z)
+                g.put('barrel', C['x0'], y, z, 'bore')
+            elif d2 <= (M['bore'] + 1) ** 2 + ROUND_SLACK:                # the bore's walls, dark
+                recolour(g, C['x0'] + 1, C['x1'] - 1, y, y, z, z, 'port')
 
 
 def build():
