@@ -12,9 +12,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import bd_glove_settings
 import bd_glove
 import bd_glove_pose
+import bd_glove_fine
 importlib.reload(bd_glove_settings)
 importlib.reload(bd_glove)
 importlib.reload(bd_glove_pose)
+importlib.reload(bd_glove_fine)
 from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, WEAR, SCRATCH_LIGHTEN
 from bd_settings import PIVOT
 import bd_gun
@@ -54,6 +56,7 @@ def run(atlas_dir):
         if not bl.pick_mode_check(o, VOXEL_M):
             bl.split_to_cubes(o, VOXEL_M)
         edit.convert(o, VOXEL_M)
+    bd_glove_fine.run(posed, NAMES)                    # the small-cube detail and the Slayer's mark
     # each glove its own scratches: the seed is mixed with the object's name
     bd_wear.carve([o.name for o in objs.values()], WEAR, lighten=SCRATCH_LIGHTEN)
     for n in ASHES_HANDS:

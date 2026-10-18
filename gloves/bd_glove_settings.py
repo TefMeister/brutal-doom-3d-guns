@@ -14,20 +14,35 @@ CUBEKIT = os.path.abspath(os.path.join(HERE, "..", "..", "blender-cubekit"))   #
 sys.path.insert(0, CUBEKIT)
 from cube_size import VOXEL_M     # ONE cube size for every cube model (3.4 mm), set in blender-cubekit/cube_size.py
 
+# ---- the hand's size ----
+# Tefa, 2026-10-18: "we need to make hands bigger". Every length below is the approved hand's, times HAND_SCALE, so the
+# shapes and colours Tefa approved stay as they were, only bigger.
+HAND_SCALE = 1.25
+
+
+def sc(v):
+    """A length of the approved hand, at HAND_SCALE."""
+    return int(round(v * HAND_SCALE))
+
+
 # ---- the hand's shape: the Ashes gloves' approved hand (2026-09-23), in cubes ----
-PALM_W, PALM_L, PALM_T = 26, 27, 8
-PALM_CORNER = 4                     # rounding at the wrist corners and knuckle corners
-DOME = 2                            # the back of the hand rises this much in the middle
-EDGE_ROUND = 2                      # cubes shaved off the palm's long edges, top and bottom
+PALM_W, PALM_L, PALM_T = sc(26), sc(27), sc(8)
+PALM_CORNER = sc(4)                 # rounding at the wrist corners and knuckle corners
+DOME = sc(2)                        # the back of the hand rises this much in the middle
+EDGE_ROUND = sc(2)                  # cubes shaved off the palm's long edges, top and bottom
 TAPER = 1                           # the palm gets this much thinner towards the knuckles and the wrist
-# (name, centre x for the RIGHT hand, knuckle y, length in cubes)
-FINGERS = [("index", -9, 26, 22), ("middle", -3, 27, 24), ("ring", 3, 26, 23), ("pinky", 9, 23, 18)]
-FINGER_W, FINGER_T = 5, 5
+THUMB_PAD = dict(y0=1, y1=sc(15), yc=sc(8), ry=sc(7), reach=sc(5))   # the pad of the thumb, low and wide
+PALM_LINES = dict(x=sc(4), y0=sc(3), y1=PALM_L - sc(4))             # the palm's lines
+# (name, centre x for the RIGHT hand, knuckle y, length in cubes); the centres picked by hand, not scaled, so the
+# wider fingers keep one cube between them
+FINGERS = [("index", -10, sc(26), sc(22)), ("middle", -3, sc(27), sc(24)), ("ring", 4, sc(26), sc(23)),
+           ("pinky", 11, sc(23), sc(18))]
+FINGER_W, FINGER_T = 6, 6
 CURL = (14, 26, 16)                 # relaxed curl, degrees down at each of the three joints
 SPLAY = {"index": -1, "middle": 0, "ring": 0, "pinky": 1}
-THUMB_BASE = (-11, 8, -1)           # where it leaves the palm (right hand)
-THUMB_W, THUMB_T = 7, 6
-THUMB_SEGS = [(14, 56, 6), (12, 30, 24)]   # (length, degrees outward from +y, degrees down)
+THUMB_BASE = (sc(-11), sc(8), -1)   # where it leaves the palm (right hand)
+THUMB_W, THUMB_T = sc(7), sc(6)
+THUMB_SEGS = [(sc(14), 56, 6), (sc(12), 30, 24)]   # (length, degrees outward from +y, degrees down)
 
 
 # ---- the under-glove: leather over the whole hand (blue-green since 2026-10-18, see COL), fingers and thumb included ----
@@ -42,10 +57,10 @@ TIP_ROUND = 2                       # the last cubes of a finger lose their side
 PLATE_GAP = 1                       # bare under-glove steps at each joint, between two plates
 PLATE_RAISE = 2                     # cubes a plate stands above the glove
 PLATE_OVERHANG = 1                  # cubes a finger plate reaches past each side of the finger
-KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2, raise_=PLATE_RAISE)   # over each finger's knuckle
-BACK_PLATE = dict(x0=-11, x1=12, y0=3, y1=21, corner=3, raise_=PLATE_RAISE)        # the big plate on the back
-BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2, raise_=1)                # a smaller one stacked on it
-RIVETS = [(-9, 5), (10, 5), (-9, 19), (10, 19)]                    # bright bolt heads at the big plate's corners
+KNUCKLE_PLATE = dict(y0=PALM_L - sc(4), y1=PALM_L + 1, half_w=2, raise_=PLATE_RAISE)   # over each finger's knuckle
+BACK_PLATE = dict(x0=sc(-11), x1=sc(12), y0=sc(3), y1=sc(21), corner=sc(3), raise_=PLATE_RAISE)   # the big plate
+BACK_PLATE_TOP = dict(x0=sc(-5), x1=sc(6), y0=sc(8), y1=sc(16), corner=2, raise_=1)   # a smaller one stacked on it
+RIVETS = [(sc(-9), sc(5)), (sc(10), sc(5)), (sc(-9), sc(19)), (sc(10), sc(19))]   # bolt heads at the big plate's corners
 # Tefa, 2026-10-18, on the bulkier plates: "thats good, now needs other parts to be dark green too". Which plates are
 # dark green (the rest stay steel): 'knuckle', 'back', 'back_top', 'finger'.
 # Then: "please have fingers have steel only on the knucle and joint parts, but the rest green" -> finger and thumb
@@ -55,10 +70,17 @@ JOINT_RAISE = 1                     # a joint's steel band stands this far above
 
 # ---- the armoured cuff (step 3; the plates approved by Tefa 2026-10-18: "thats good!") ----
 # A chunky green bracer over the wrist, wider and taller than the hand, two steel bands round it, a raised panel on top.
-ARMOUR_CUFF = dict(y0=-14, y1=-1, half_w=12, thick=12, corner=3)
-CUFF_BANDS = (-13, -12, -3, -2)     # rows that are steel bands
-CUFF_PANEL = dict(x0=-6, x1=6, y0=-10, y1=-5, corner=1, raise_=1)
-CUFF_RIVETS = [(-9, -7), (9, -7)]
+ARMOUR_CUFF = dict(y0=sc(-14), y1=-1, half_w=sc(12), thick=sc(12), corner=sc(3))
+CUFF_BANDS = (sc(-14) + 1, sc(-14) + 2, -3, -2)   # rows that are steel bands
+CUFF_PANEL = dict(x0=sc(-6), x1=sc(6), y0=sc(-10), y1=sc(-5), corner=1, raise_=1)
+CUFF_RIVETS = [(sc(-9), sc(-7)), (sc(9), sc(-7))]
+
+# ---- leather (Tefa, 2026-10-18: "maybe add some leather") ----
+# Brown leather on the palm side (where the hand holds the gun), and a strap round the cuff, next to its band at the
+# open end, fastened with a steel buckle beside the cuff's raised panel.
+LEATHER_PALM = True
+STRAP = dict(y0=ARMOUR_CUFF['y0'] + 3, y1=ARMOUR_CUFF['y0'] + 4)      # the rows the strap covers; it stands one proud
+BUCKLE = dict(x0=CUFF_PANEL['x1'] + 1, x1=CUFF_PANEL['x1'] + 5, y0=STRAP['y0'] - 1, y1=STRAP['y1'] + 1)   # steel frame
 
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
@@ -82,7 +104,22 @@ COL = dict(
     under=(20, 28, 17),             # the under-glove, the cuff's colour
     under_dark=(12, 17, 10),        # creases at the joints, the palm's lines, the cuff's lining
     under_hi=(28, 38, 24),          # worn ridges (knuckles)
+    leather=(66, 40, 22),           # brown leather: the palm, the strap
+    leather_dark=(44, 26, 14),
+    leather_hi=(92, 60, 34),        # worn edges
 )
+# ---- fine detail with the kit's smallest cubes (0.85 mm): bd_glove_fine.py ----
+# Tefa, 2026-10-18: "decorate them more with smaller cubes ... and the raised slayer sign to the left glove plate".
+# In hand space (the right hand; the left gets the mirror), in cubes, quarters allowed. Built ones stand proud of the
+# surface below them, cut ones go one small cube in.
+SLAYER_MARK = dict(x=0.5, y=BACK_PLATE['y0'] + 2.25, height=2, colour='mark')   # the LEFT back plate only: the mark's
+                                                                              # middle-bottom (x, y); `height` small cubes
+PLATE_GROOVE = 1.5            # an engraved line this far inside the back plate's edge
+KNUCKLE_STUD = dict(size=2, height=2)   # a raised square stud, in small cubes, on every knuckle plate
+STITCH = dict(step=2, colour='stitch')  # stitch dots along both edges of the strap, every `step` small cubes
+CUFF_VENTS = dict(n=3, gap=1.0, colour='under_dark')   # short grooves across the cuff's raised panel
+FINE_COL = dict(mark=(176, 22, 18), stitch=(150, 118, 76), groove=(10, 14, 9), stud=(120, 128, 138))
+
 SHADE = {(0, 0, 1): 1.12, (0, 0, -1): 0.62, (0, 1, 0): 0.88, (0, -1, 0): 0.88,
          (1, 0, 0): 0.78, (-1, 0, 0): 0.78}
 NOISE = 0.04
@@ -103,14 +140,14 @@ RIGHT_POSE = dict(
     x0=-11, y0=-10, z0=-13,         # where hand space lands (the Ashes grip's front top, its right side)
     grip_top=-1, rake=0.38,         # the hand leans back with the Ashes grip below this height
     curls={"middle": (45, 55, 60), "ring": (45, 55, 60), "pinky": (40, 50, 50), "index": (10, 35, 30)},
-    thumb=[(12, 5, 80), (10, -30, 20)],
+    thumb=[(sc(12), 5, 80), (sc(10), -30, 20)],
     shift=RIGHT_HAND_MOVE,          # onto this gun's grip
 )
 LEFT_POSE = dict(
     x0=116, y0=19,                  # the Ashes pump's middle; the knuckle line just off the pump's right side
-    z0=GUN_PUMP['z0'] - 1 - 4,      # the palm's face (4 cubes below hand-space 0) just under this pump
+    z0=GUN_PUMP['z0'] - 1 - PALM_T // 2,   # the palm's face (half the palm below hand-space 0) just under this pump
     left_edge=GUN_PUMP['y'] + 1, wrist_drop=0.7,   # past the pump's left side the wrist drops 1 cube in 1.4
     curls={"index": (65, 50, 20), "middle": (65, 50, 20), "ring": (65, 50, 20), "pinky": (60, 45, 15)},
-    thumb=[(11, 88, 22), (11, 80, 60)], thumb_base=(-11, 12, -1), thumb_size=(9, 7),
+    thumb=[(sc(11), 88, 22), (sc(11), 80, 60)], thumb_base=(sc(-11), sc(12), -1), thumb_size=(sc(9), sc(7)),
     shift=(26, 0, 0),               # forward to the pump's place on this gun (the Ashes LEFT_SHIFT)
 )       # Blender metres: where the glove sits, beside the shotgun, while it is shaped
