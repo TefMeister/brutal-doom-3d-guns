@@ -28,7 +28,7 @@ SPLAY = {"index": -1, "middle": 0, "ring": 0, "pinky": 1}
 THUMB_BASE = (-11, 8, -1)           # where it leaves the palm (right hand)
 THUMB_W, THUMB_T = 7, 6
 THUMB_SEGS = [(14, 56, 6), (12, 30, 24)]   # (length, degrees outward from +y, degrees down)
-CUFF_L, CUFF_W = 9, 20              # cubes of cuff below the wrist, and its width
+
 
 # ---- the under-glove: brown leather over the whole hand, fingers and thumb included ----
 CREASE = 1                          # a darker line this many cubes long at each finger joint
@@ -52,6 +52,13 @@ RIVETS = [(-9, 5), (10, 5), (-9, 19), (10, 19)]                    # bright bolt
 # plates green, a narrower steel band over every finger joint, knuckle plates steel.
 GREEN_PLATES = ('back', 'back_top', 'finger')
 JOINT_RAISE = 1                     # a joint's steel band stands this far above the glove, lower than the plates
+
+# ---- the armoured cuff (step 3; the plates approved by Tefa 2026-10-18: "thats good!") ----
+# A chunky green bracer over the wrist, wider and taller than the hand, two steel bands round it, a raised panel on top.
+ARMOUR_CUFF = dict(y0=-14, y1=-1, half_w=12, thick=12, corner=3)
+CUFF_BANDS = (-13, -12, -3, -2)     # rows that are steel bands
+CUFF_PANEL = dict(x0=-6, x1=6, y0=-10, y1=-5, corner=1, raise_=1)
+CUFF_RIVETS = [(-9, -7), (9, -7)]
 
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
