@@ -4,9 +4,10 @@
 import math
 
 from bd_glove_settings import (PALM_W, PALM_L, PALM_T, PALM_CORNER, DOME, EDGE_ROUND, TAPER, FINGERS, FINGER_W,
-                               FINGER_T, CURL, SPLAY, THUMB_BASE, THUMB_W, THUMB_T, THUMB_SEGS, CUFF_L, CUFF_W,
+                               FINGER_T, CURL, SPLAY, THUMB_BASE, THUMB_W, THUMB_T, THUMB_SEGS,
                                CREASE, TIP_ROUND, PLATE_GAP, PLATE_RAISE, PLATE_OVERHANG, KNUCKLE_PLATE, BACK_PLATE,
-                               BACK_PLATE_TOP, RIVETS, GREEN_PLATES, JOINT_RAISE)
+                               BACK_PLATE_TOP, RIVETS, GREEN_PLATES, JOINT_RAISE, ARMOUR_CUFF,
+                               CUFF_BANDS, CUFF_PANEL, CUFF_RIVETS)
 
 FINGER_METAL = 'green' if 'finger' in GREEN_PLATES else 'steel'
 
@@ -141,10 +142,21 @@ def _palm(cells):
 
 
 def _cuff(cells):
-    def colour_at(x, y, z, top, bottom):
-        return 'seam' if y == -1 and not top and not bottom else 'under'
+    C = ARMOUR_CUFF
 
-    _slab(cells, -CUFF_L, -1, CUFF_W // 2, PALM_T, 2, colour_at)
+    def colour_at(x, y, z, top, bottom):
+        if y == C['y0']:
+            return 'under_dark'                                      # the leather lining at the open end
+        if y in CUFF_BANDS:
+            return 'steel_hi' if top else 'steel'
+        return 'green'
+
+    _slab(cells, C['y0'], C['y1'], C['half_w'], C['thick'], C['corner'], colour_at)
+    P = CUFF_PANEL
+    _plate(cells, range(P['x0'], P['x1'] + 1), range(P['y0'], P['y1'] + 1), P['corner'], P['y1'], P['raise_'],
+           'green')
+    for x, y in CUFF_RIVETS:
+        cells[(x, y, _top(cells, x, y) + 1)] = 'rivet'
 
 
 def _top(cells, x, y):
