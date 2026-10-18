@@ -6,24 +6,31 @@ import math
 from bd_glove_settings import (PALM_W, PALM_L, PALM_T, PALM_CORNER, DOME, EDGE_ROUND, TAPER, FINGERS, FINGER_W,
                                FINGER_T, CURL, SPLAY, THUMB_BASE, THUMB_W, THUMB_T, THUMB_SEGS, CUFF_L, CUFF_W,
                                CREASE, TIP_ROUND, PLATE_GAP, PLATE_RAISE, PLATE_OVERHANG, KNUCKLE_PLATE, BACK_PLATE,
-                               BACK_PLATE_TOP, RIVETS, GREEN_PLATES)
+                               BACK_PLATE_TOP, RIVETS, GREEN_PLATES, JOINT_RAISE)
+
+FINGER_METAL = 'green' if 'finger' in GREEN_PLATES else 'steel'
 
 
 def _plate_steps(segs, start=1):
-    """{step: 'lead' or 'mid'} for the plated steps of a finger: every segment its own plate, a bare gap at joints."""
+    """{step: 'lead', 'mid' or 'joint'} along a finger: every segment its own plate, and the steps between two
+    plates, where the finger bends, a joint."""
     out, s0 = {}, 0
     for n, _side, _down in segs:
         first = max(s0 + PLATE_GAP, start) if s0 else start
         for step in range(first, s0 + n - (PLATE_GAP if s0 + n < sum(s[0] for s in segs) else 0)):
             out[step] = 'lead' if step == first else 'mid'
         s0 += n
+    plated = sorted(out)
+    for step in range(plated[0], plated[-1]):
+        out.setdefault(step, 'joint')
     return out
 
 
-def _chain(cells, xc, w, t, start, segs, colour_at, plates=None):
+def _chain(cells, xc, w, t, start, segs, colour_at, plates=None, metal='steel'):
     """A finger or thumb: boxes w wide, t thick, laid along a bent path.
     segs: (length, degrees sideways [+ = towards +x], degrees down). Returns the tip point.
-    plates: {step: 'lead'/'mid'}: those steps get a steel plate over their top and upper sides."""
+    plates: {step: 'lead'/'mid'/'joint'}: plated steps get a `metal` plate over their top and upper sides, joints a
+    narrower, lower steel band."""
     x, y, z = start
     step = 0
     total = sum(s[0] for s in segs)
@@ -42,8 +49,14 @@ def _chain(cells, xc, w, t, start, segs, colour_at, plates=None):
                         continue                                     # rounded finger, rounder at the tip
                     cells[(ix + xc, cy, iz)] = colour_at(step, iz == cz - t // 2 + t - 1)
             kind = (plates or {}).get(step)
-            if kind:
-                top = cz - t // 2 + t - 1
+            top = cz - t // 2 + t - 1
+            if kind == 'joint':
+                for ix in range(cx - w // 2 + 1, cx - w // 2 + w - 1):
+                    for pz in range(top, top + JOINT_RAISE + 1):
+                        cells[(ix + xc, cy, pz)] = 'steel_hi' if pz == top + JOINT_RAISE else 'steel'
+                for ix in (cx - w // 2, cx - w // 2 + w - 1):
+                    cells[(ix + xc, cy, top - 1)] = 'steel_dark'
+            elif kind:
                 x_lo, x_hi = cx - w // 2 - PLATE_OVERHANG, cx - w // 2 + w - 1 + PLATE_OVERHANG
                 for ix in range(x_lo, x_hi + 1):
                     edge = ix in (x_lo, x_hi)                        # the plate's sides, wrapping down
@@ -51,9 +64,9 @@ def _chain(cells, xc, w, t, start, segs, colour_at, plates=None):
                         if edge and pz == top + PLATE_RAISE:
                             continue                                 # bevelled top edges
                         if pz == top + PLATE_RAISE or (pz == top + PLATE_RAISE - 1 and ix in (x_lo + 1, x_hi - 1)):
-                            c = 'steel_hi' if kind == 'lead' else 'steel'
+                            c = metal + '_hi' if kind == 'lead' else metal
                         else:
-                            c = 'steel_dark' if edge or pz < top else 'steel'
+                            c = metal + '_dark' if edge or pz < top else metal
                         cells[(ix + xc, cy, pz)] = c
             step += 1
     return (x + xc, y, z)
@@ -75,7 +88,7 @@ def _finger(cells, name, xc, y0, length):
             return 'under_dark'
         return 'under_hi' if step == 0 and top else 'under'
 
-    return _chain(cells, xc, FINGER_W, FINGER_T, (0, y0, 1), segs, colour_at, _plate_steps(segs))
+    return _chain(cells, xc, FINGER_W, FINGER_T, (0, y0, 1), segs, colour_at, _plate_steps(segs), FINGER_METAL)
 
 
 def _thumb(cells):
@@ -86,7 +99,8 @@ def _thumb(cells):
         return 'under_dark' if any(j <= step < j + CREASE for j in joints) and top else 'under'
 
     bx, by, bz = THUMB_BASE
-    return _chain(cells, bx, THUMB_W, THUMB_T, (0, by, bz), segs, colour_at, _plate_steps(segs, start=3))
+    return _chain(cells, bx, THUMB_W, THUMB_T, (0, by, bz), segs, colour_at, _plate_steps(segs, start=3),
+                  FINGER_METAL)
 
 
 def _slab(cells, y0, y1, half_w, thick, corner, colour_at, dome=0, taper=0):
