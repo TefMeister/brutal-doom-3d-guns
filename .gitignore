@@ -1,0 +1,8 @@
+*.blend1
+__pycache__/
+_renders/
+*.pk3
+*.wad
+*.ogg
+*.png
+!docs/**/*.png
