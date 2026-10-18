@@ -47,8 +47,11 @@ BACK_PLATE = dict(x0=-11, x1=12, y0=3, y1=21, corner=3, raise_=PLATE_RAISE)     
 BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2, raise_=1)                # a smaller one stacked on it
 RIVETS = [(-9, 5), (10, 5), (-9, 19), (10, 19)]                    # bright bolt heads at the big plate's corners
 # Tefa, 2026-10-18, on the bulkier plates: "thats good, now needs other parts to be dark green too". Which plates are
-# dark green (the rest stay steel): 'knuckle', 'back', 'back_top'.
-GREEN_PLATES = ('knuckle', 'back', 'back_top')
+# dark green (the rest stay steel): 'knuckle', 'back', 'back_top', 'finger'.
+# Then: "please have fingers have steel only on the knucle and joint parts, but the rest green" -> finger and thumb
+# plates green, a narrower steel band over every finger joint, knuckle plates steel.
+GREEN_PLATES = ('back', 'back_top', 'finger')
+JOINT_RAISE = 1                     # a joint's steel band stands this far above the glove, lower than the plates
 
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
