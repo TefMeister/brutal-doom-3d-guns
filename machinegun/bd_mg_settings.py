@@ -29,7 +29,7 @@ BUTT = dict(x1=1, y=5)                                                # the rubb
 # ---- pistol grip, raked back, ridged sides ----
 GRIP = dict(z0=-30, z1=-1, front=78, back=64, rake=0.3, y=4, ridge_step=3, ridge_inset=2)
 GUARD = dict(x1=100, z_bottom=-12, y=2, lean=3)
-TRIGGER = [(85, -1), (84, -2), (84, -3), (84, -4), (85, -5), (85, -6), (86, -7)]
+TRIGGER = [(92, -1), (91, -2), (91, -3), (91, -4), (92, -5), (92, -6), (93, -7)]   # where the glove's finger reaches
 # ---- the box magazine under the receiver, with a carry strap on each side ----
 # Tefa: "the mag needs to be more forward and angled forwards not backwards": its bottom sits `lean` cubes ahead of
 # its top, the strap leaning with it.
@@ -67,6 +67,11 @@ SPIKE = dict(x0=262, x1=286, z_top=11, z_bot=5, y=1)                  # a blade 
                                                                       # to the point
 FLASHLIGHT = dict(x0=214, x1=236, zc=-3, r=2.5)                       # under the handguard, its lens at the front
 AMMO_SCREEN = dict(x0=132, x1=148, z0=10, z1=20)                      # left side, opposite the ammo window
+# ---- Doomguy's gloves on it (Tefa, 2026-10-18), the shotgun's glove poses moved onto this gun: the right hand by how
+# far this grip's top front is from the shotgun's (13, -7) and with this grip's lean; the left hand palm up under the
+# handguard, as under the shotgun's pump (gloves/bd_glove_settings.py RIGHT_POSE, LEFT_POSE) ----
+RIGHT_HAND = dict(shift=(61, 0, -3), rake=0.3)
+LEFT_HAND = dict(shift=(81, 0, 0), z0=-6, y0=16, left_edge=7)
 FRONT_SIGHT = dict(x0=252, x1=253, y=1, z1=34, ears_y=4, ears_z1=33, ears_x=(251, 254))   # its top in the middle of
                                                                                      # BOX_SIGHT's tunnel
 
