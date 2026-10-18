@@ -19,6 +19,7 @@ def run():
     cw.SCRATCH_MM = WEAR['scratch_mm']
     cw.ALONG_SHARE = WEAR['along_share']
     cw.GOUGE_SHARE = WEAR['gouge_share']
+    cw.ZIGZAG_SHARE = WEAR['zigzag_share']
     cw.SOFT_SCRATCH_PER_CM2 = cw.CHIP_PER_CM = cw.SOFT_CHIP_PER_CM = cw.PIT_PER_CM2 = 0
     bare = tuple(c / 255.0 for c in COL['bare_steel'])
     for name in PARTS:
