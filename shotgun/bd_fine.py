@@ -1,6 +1,8 @@
 # Fine detail on the Brutal Doom cube shotgun, in the OPEN Blender file, after bd_live.run() and before bd_wear.run():
 # panel lines and vents cut with the kit's smallest cubes (0.85 mm), screw heads, trims and arrow marks built of them.
 # MCP: import bd_fine; bd_fine.run(). The numbers are FINE_* in bd_settings.py.
+import random
+
 import bpy
 
 import bl
@@ -8,7 +10,8 @@ import edit
 import carve_wear as cw
 import edit_small as small
 import bd_gun
-from bd_settings import (VOXEL_M, SHADE, FINE_LINES, FINE_SCREWS, FINE_VENTS, FINE_TRIMS, FINE_MARKS, FINE_COL)
+from bd_settings import (VOXEL_M, SHADE, FINE_LINES, FINE_SCREWS, FINE_VENTS, FINE_TRIMS, FINE_MARKS, FINE_NUMBER, FONT,
+                         FINE_COL)
 
 F = edit.FINE
 OB = "BD_body"
@@ -165,6 +168,27 @@ def run():
                     p = surface(s, g, sign, y, mx + i / F, z)
                     if p:
                         dt.build(tuple(p[n] + d[n] for n in range(3)), mark)
+
+    N = FINE_NUMBER                                                   # the serial number, carved and worn
+    rng = random.Random(N['seed'])
+    number = rgb01('number')
+    step = 3 * N['dot'] + N['gap']                                    # small cubes from one letter to the next
+    for sign in sides(N['side']):
+        for i, ch in enumerate(N['text']):
+            x0 = int(round(N['x'] * F)) + i * step
+            for row, bits in enumerate(FONT[ch]):
+                for col, bit in enumerate(bits):
+                    if bit != '1':
+                        continue
+                    for a in range(N['dot']):
+                        for b in range(N['dot']):
+                            if rng.random() < N['wear']:
+                                continue                              # worn away
+                            X = x0 + col * N['dot'] + a
+                            Z = int(round(N['z_top'] * F)) - row * N['dot'] - b
+                            p = surface(s, g, sign, N['y'], X / F, Z / F)
+                            if p:
+                                dt.cut(p, number)
 
     dt.paint_cuts()
     small.tidy(s)

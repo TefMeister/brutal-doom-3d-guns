@@ -8,7 +8,7 @@ import math
 
 from bd_settings import (GRIP, GRAIN_STEP, GRAIN_WAVE, REAR_STUB, RECEIVER, REAR_STEP, NOSE_CHAMFER, SIDE_PLATE, SPINE, REAR_SIGHT, TOP_BLOCK, PORT, SHELL,
                          LOADING_PORT, TRIGGER_PLATE, LOWER_BLOCK, GUARD, TRIGGER, BARREL, BARREL_SHINE, BARREL_RING,
-                         RODS, HOUSING, MAGTUBE, PUMP, ACTION_BARS, FRONT_MODULE, SHROUD, SHROUD_LOW, SHROUD_PANEL,
+                         JACKET, RODS, HOUSING, MAGTUBE, PUMP, ACTION_BARS, FRONT_MODULE, SHROUD, SHROUD_LOW, SHROUD_PANEL,
                          MUZZLE, MAG_MUZZLE, FRONT_SIGHT)
 from parts import Parts
 
@@ -140,12 +140,37 @@ def guard(g):
         g.fill('trigger', x, x, -1, 1, z, z, 'metal_hi')
 
 
+def jacket(g):
+    """The thick hollow jacket round the bare barrel: solid ends, a dark inside, machined windows and top slots."""
+    J, zc = JACKET, BARREL['zc']
+    inner = J['r'] - J['wall']
+    for x in range(J['x0'], J['x1'] + 1):
+        end = min(x - J['x0'], J['x1'] - x)
+        r = J['r'] - (1 if end == 0 else 0)                            # the ends chamfered by one cube
+        solid = end < J['cap']
+        for y in range(-r, r + 1):
+            for z in range(math.floor(zc - r), math.ceil(zc + r) + 1):
+                d2 = y * y + (z - zc) ** 2
+                if d2 > r * r + 0.3 or (not solid and d2 < inner * inner):
+                    continue
+                g.put('body', x, y, z, 'port' if not solid and d2 < (inner + 1) ** 2 else 'polish')
+    for y in range(-BARREL_SHINE, BARREL_SHINE + 1):                   # the shine along its top
+        z = math.floor(zc + math.sqrt(J['r'] ** 2 + 0.3 - y * y))
+        recolour(g, J['x0'] + 1, J['x1'] - 1, y, y, z, z, 'polish_hi')
+    W, T = J['windows'], J['top_slot']
+    for wx in W['x']:
+        g.cut(wx, wx + W['length'] - 1, W['y_from'], J['r'] + 1, W['z0'], W['z1'])
+        g.cut(wx, wx + W['length'] - 1, -J['r'] - 1, -W['y_from'], W['z0'], W['z1'])
+        cx = wx + W['length'] // 2
+        g.cut(cx - T['length'] // 2, cx + T['length'] // 2, -T['y'], T['y'], T['z_from'], zc + J['r'] + 1)
+
+
 def barrel(g):
     B, K = BARREL, BARREL_RING
+    jacket(g)
     g.tube('body', B['x0'], B['x1'], B['zc'], B['r'], 'polish')
-    for y in range(-BARREL_SHINE, BARREL_SHINE + 1):                   # the shine along its top
-        z = math.floor(B['zc'] + math.sqrt(B['r'] ** 2 + 0.3 - y * y))
-        recolour(g, B['x0'], B['x1'], y, y, z, z, 'polish_hi')
+    J = JACKET                                                         # inside the jacket the barrel is in shadow, so
+    g.tube('body', J['x0'] + J['cap'], J['x1'] - J['cap'], B['zc'], B['r'], 'metal_dark')   # the windows read as holes
     g.tube('body', K['x0'], K['x1'], B['zc'], K['r'], 'brass')
     D = RODS
     for yy in (-D['y'], D['y']):
@@ -154,14 +179,7 @@ def barrel(g):
     g.tube('body', T['x0'], T['x1'], T['zc'], T['r'], 'metal')
     H = HOUSING
     box(g, 'body', H['x0'], H['x1'], H['y'], H['z0'], H['z1'], 'metal', 1)
-    S = H['slot']
-    for sign in (-1, 1):
-        g.cut(S['x0'], S['x1'], sign * H['y'], sign * H['y'], S['z0'], S['z1'])
-        floor = sign * (H['y'] - 1)
-        recolour(g, S['x0'], S['x1'], floor, floor, S['z0'], S['z1'], 'metal_dark')
     for x in range(H['x0'] + H['holes'] // 2, H['x1'], H['holes']):
-        if S['x0'] <= x <= S['x1']:
-            continue                                                   # bolt heads only outside the slot
         for sign in (-1, 1):
             g.put('body', x, sign * H['y'], H['hole_z'], 'metal_dark')
     M = FRONT_MODULE
