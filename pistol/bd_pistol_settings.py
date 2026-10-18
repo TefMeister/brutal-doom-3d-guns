@@ -24,13 +24,14 @@ PIVOT = (10, 0.5, 28)             # the top of the grip, the same point as the A
 # nose, windows down the slide showing the copper barrel, a bigger frame and ring module, a fatter grip.
 
 # ---- the grip: raked back like the Ashes pistol's, a palm swell at the back, a flared base ----
-GRIP = dict(z0=2, z1=28, front=20, back=1, rake=0.2, y=5, swell=2, belly=1)  # front/back x at the top; y half-width;
+GRIP = dict(z0=-12, z1=28, front=20, back=1, rake=0.2, y=5, swell=2, belly=1)  # front/back x at the top; y half-width;
                                                                               # swell/belly = bulge at back/front
-GRIP_TEXTURE = dict(inset=2, z0=7, z1=24)          # stippled rubber on both sides, `inset` cubes in from the edges
+GRIP_TEXTURE = dict(inset=2, z0=-7, z1=24)          # stippled rubber on both sides, `inset` cubes in from the edges
 # Tefa, 2026-10-18: "that handle could use a silver plate with a millitary logo in the middle". A silver plate one cube
 # proud on each side, and on it a dark military star in a ring (bd_pistol_fine.py, LOGO).
-GRIP_PLATE = dict(inset=2, z0=6, z1=24, corner=2)
-MAG_BASE = dict(z0=-1, z1=1, over=1, y=6)          # the magazine's flared base plate
+GRIP_PLATE = dict(inset=2, z0=-8, z1=24, corner=2)  # Tefa: "make the handle longer downwards", then "extend
+                                                   # the handle even further": 14 cubes lower, the plate with it
+MAG_BASE = dict(z0=-15, z1=-13, over=1, y=6)          # the magazine's flared base plate
 TANG = dict(x0=-11, z0=29, z1=32, y=4, droop=0.25)  # the tang reaching back over the web of the hand, its end drooping
 
 # ---- the frame under the slide, the trigger guard and the ring module under the front ----
@@ -55,7 +56,11 @@ CASE = dict(x0=29, x1=36, y=-3, zc=45, r=1.8, head=1)   # a brass case lying in 
 COVER = dict(x0=24, x1=40, z0=41, z1=47, y=-7, ridges=(28, 32, 36), hinge_z=40)   # the port's cover, closed: one
                                                    # cube proud, hinged along its bottom edge (hinge_z) to swing down
 SERRATIONS = dict(x0=-3, x1=10, step=2, z0=35, z1=42)  # grip grooves at the back of the lower band, both sides
-REAR_SIGHT = dict(x0=-5, x1=0, y=5, z1=52, notch=1)
+# Tefa: "the sights need to sit right for VR actual aiming". So the front post's top is level with the rear sight's
+# top and sits in the middle of the notch, with a cube of light either side; the three white dots (two on the rear
+# sight's back face, one on the post's back face) are all at one height; and the sight line runs 3 cubes above the
+# compensator, so nothing between the sights blocks it.
+REAR_SIGHT = dict(x0=-5, x1=0, y=5, z1=54, notch=1, notch_depth=2, dot_z=53)
 BARREL = dict(x0=8, x1=64, zc=41, r=4.0)           # copper, under the windows; it stops at the compensator, so
                                                    # the bore through that is dark metal, not copper
 # The compensator: a heavy block on the nose, ports cut into its top and sides, the bore through its front.
@@ -65,7 +70,8 @@ BARREL = dict(x0=8, x1=64, zc=41, r=4.0)           # copper, under the windows; 
 # thin muzzle completely". Its length was 11 cubes (65-75): now 11 more behind and 33 more in front, the bore cut into
 # its front face with a bright crown, no barrel sticking out. Where it reaches back over the frame it wraps around it.
 COMP = dict(x0=54, x1=108, y=8, z0=31, z1=51, bevel=2, top_ports=(90, 94, 98, 102), port_w=2, port_depth=3)
-FRONT_SIGHT = dict(x0=105, x1=106, z1=54)
+FRONT_SIGHT = dict(x0=105, x1=106, y=1, z1=54, dot_z=53)   # top level with REAR_SIGHT's; 3 cubes wide, as one
+                                                   # cube looked too thin from behind the rear sight
 MUZZLE = dict(bore=2.4, depth=6)                   # the bore into the compensator's front, its walls dark
 
 # ---- fine detail with the kit's smallest cubes (0.85 mm): bd_pistol_fine.py, the shotgun's way (shotgun/bd_fine.py) ----
@@ -92,8 +98,8 @@ FINE_STAMPS = [  # raised marks: (part, side, y, x, z_top, pattern, dot, colour)
 # height in small cubes).
 FINE_RIDGES = [('both', 8, 4, (64, 36), (68, 46), 9, 4, 2)]
 # The military star in a ring on each grip plate: centred on the plate, in cubes.
-LOGO = dict(z=15, ring_r=4.75, ring_w=0.75, star_r=3.75, star_in=1.5, height=2)
-FINE_COL = dict(line=(8, 8, 9), screw=(70, 72, 78), ridge=(58, 60, 66), red=(176, 24, 20), white=(200, 200, 194),
+LOGO = dict(z=8, ring_r=4.75, ring_w=0.75, star_r=3.75, star_in=1.5, height=2)
+FINE_COL = dict(line=(4, 4, 4), screw=(40, 41, 45), ridge=(30, 31, 34), red=(176, 24, 20), white=(200, 200, 194),
                 ring=(30, 30, 33), star=(30, 30, 33))   # dark on the silver: a pale star did not show
 
 # Carved scratches, as on the shotgun and the gloves: shorter, the pistol being small; a fraction lighter inside.
@@ -102,19 +108,20 @@ WEAR = dict(seed=668, scratch_per_cm2=0.06, scratch_mm=(6.0, 22.0), along_share=
 SCRATCH_LIGHTEN = 1.4
 
 # ---- colours, sRGB 0-255: black like the shotgun's metal, copper where the picture glows ----
+# Tefa: "we need to make this a black gun": every metal tone taken down, the grip too; the silver plates stay.
 COL = dict(
-    metal=(26, 26, 28),
-    metal_hi=(52, 53, 57),        # worn edges, the ring
-    metal_mid=(38, 39, 43),       # the upper deck, a touch lighter, like the picture's slide
-    metal_dark=(14, 14, 15),
+    metal=(14, 14, 15),
+    metal_hi=(32, 33, 36),        # worn edges, the ring
+    metal_mid=(20, 20, 22),       # the upper deck, a touch lighter, like the picture's slide
+    metal_dark=(8, 8, 9),
     copper=(132, 74, 44),
     copper_hi=(170, 102, 62),
     brass=(170, 130, 60),
     brass_hi=(206, 166, 86),
     bore=(4, 4, 4),
     port=(9, 9, 10),
-    grip=(20, 20, 22),
-    grip_check=(32, 32, 35),
+    grip=(11, 11, 12),
+    grip_check=(20, 20, 22),
     silver=(160, 163, 170),       # the grip plates
     silver_hi=(205, 208, 214),
     silver_dark=(104, 106, 112),

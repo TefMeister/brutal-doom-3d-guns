@@ -149,13 +149,13 @@ def slide(g):
         g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])
         g.cut(x, x, S['y'], S['y'], E['z0'], E['z1'])
     R = REAR_SIGHT
-    g.fill('slide', R['x0'], R['x1'], -R['y'], R['y'], S['z1'] + 1, R['z1'], 'metal')
-    g.cut(R['x0'], R['x1'], -R['notch'], R['notch'], R['z1'], R['z1'])
-    for y in (-R['y'] + 1, R['y'] - 1):
-        g.put('slide', R['x1'], y, R['z1'] - 1, 'sight_dot')
+    g.fill('slide', R['x0'], R['x1'], -R['y'], R['y'], S['z1'] - REAR_SLOPE['drop'] + 1, R['z1'], 'metal')
+    g.cut(R['x0'], R['x1'], -R['notch'], R['notch'], R['z1'] - R['notch_depth'] + 1, R['z1'])
+    for y in (-R['y'] + 1, R['y'] - 1):                                  # dots on the face toward the eye
+        g.put('slide', R['x0'], y, R['dot_z'], 'sight_dot')
     F = FRONT_SIGHT
-    g.fill('slide', F['x0'], F['x1'], 0, 0, C['z1'] + 1, F['z1'], 'metal')
-    g.put('slide', F['x0'], 0, F['z1'], 'sight_dot')
+    g.fill('slide', F['x0'], F['x1'], -F['y'], F['y'], C['z1'] + 1, F['z1'], 'metal')
+    g.put('slide', F['x0'], 0, F['dot_z'], 'sight_dot')
     B = BARREL                                                           # copper, seen through the holes and the port
     g.tube('barrel', B['x0'], B['x1'], B['zc'], B['r'], 'copper')
     K = CASE                                                             # a brass case in the port
