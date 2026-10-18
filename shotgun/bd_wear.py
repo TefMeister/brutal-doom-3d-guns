@@ -15,15 +15,20 @@ from bd_settings import VOXEL_M, WEAR, COL
 PARTS = ("BD_body", "BD_pump")
 
 
-def carve(names, wear, bare_rgb):
-    """Scratches only, on metal and paint, never on wood: wear = the WEAR dict, bare_rgb = sRGB 0-255 in the cuts."""
+def carve(names, wear, bare_rgb=None, lighten=None):
+    """Scratches only, on metal and paint, never on wood: wear = the WEAR dict. Inside the cuts: bare_rgb (sRGB 0-255),
+    or, with lighten, each cut's own colour times lighten (1.4 = 40% lighter)."""
     cw.SCRATCH_PER_CM2 = wear['scratch_per_cm2']
     cw.SCRATCH_MM = wear['scratch_mm']
     cw.ALONG_SHARE = wear['along_share']
     cw.GOUGE_SHARE = wear['gouge_share']
     cw.ZIGZAG_SHARE = wear['zigzag_share']
     cw.SOFT_SCRATCH_PER_CM2 = cw.CHIP_PER_CM = cw.SOFT_CHIP_PER_CM = cw.PIT_PER_CM2 = 0
-    bare = tuple(c / 255.0 for c in bare_rgb)
+    if lighten:
+        def bare(rgb):
+            return tuple(min(1.0, c * lighten) for c in rgb)
+    else:
+        bare = tuple(c / 255.0 for c in bare_rgb)
     for name in names:
         ob = bpy.data.objects[name]
         if not edit.has_colours(ob):

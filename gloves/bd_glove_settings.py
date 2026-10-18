@@ -66,6 +66,8 @@ COL = dict(
     steel_dark=(34, 38, 44),        # plate sides and undersides
     steel_hi=(104, 112, 122),       # the leading edge of each plate, catching the light
     rivet=(140, 146, 152),
+    gunmetal=(26, 26, 28),          # the cuff's bands: the shotgun's own metal (Tefa, 2026-10-18: "the steel on the
+    gunmetal_hi=(52, 53, 57),       # cuffs needs to be like gun metal colour"), its worn-edge colour on top
     green=(50, 66, 38),             # dark green armour
     green_dark=(30, 40, 23),
     green_hi=(76, 96, 56),
@@ -89,6 +91,8 @@ NOISE = 0.04
 # smallest cubes dug out, steel showing in the cut. Shorter than the gun's, the plates being small.
 WEAR = dict(seed=667, scratch_per_cm2=0.08, scratch_mm=(5.0, 18.0), along_share=0.6, gouge_share=0.1,
             zigzag_share=0.35)
-BARE = (58, 66, 74)                 # inside a cut: the steel under the green paint
+# Inside a cut: a fraction lighter than what it is cut into (Tefa, 2026-10-18: "carved scrathces need to be a fraction
+# lighter colour than what they are on"; steel in every cut was the first try).
+SCRATCH_LIGHTEN = 1.4
 
 SHOW_AT = (0.30, 0.10, 0.0)        # Blender metres: where the glove sits, beside the shotgun, while it is shaped
