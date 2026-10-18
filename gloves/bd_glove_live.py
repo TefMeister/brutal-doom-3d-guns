@@ -3,16 +3,20 @@
 # anything else in the file.
 import importlib
 import os
+import sys
 
 import bpy
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "shotgun"))   # bd_wear.carve
 
 import bd_glove_settings
 import bd_glove
 importlib.reload(bd_glove_settings)
 importlib.reload(bd_glove)
-from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, SHOW_AT
+from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, SHOW_AT, WEAR, BARE
 import bl
 import edit
+import bd_wear
 from bl import Space, make_objects
 
 COLLECTION = "BD gloves"
@@ -40,5 +44,6 @@ def run(atlas_dir):
         if not bl.pick_mode_check(o, VOXEL_M):
             bl.split_to_cubes(o, VOXEL_M)
         edit.convert(o, VOXEL_M)
+    bd_wear.carve([o.name for o in objs.values()], WEAR, BARE)
     print("glove cubes:", len(cells))
     return objs
