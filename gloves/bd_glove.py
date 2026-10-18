@@ -148,7 +148,7 @@ def _cuff(cells):
         if y == C['y0']:
             return 'under_dark'                                      # the leather lining at the open end
         if y in CUFF_BANDS:
-            return 'steel_hi' if top else 'steel'
+            return 'gunmetal_hi' if top else 'gunmetal'
         return 'cuff'
 
     _slab(cells, C['y0'], C['y1'], C['half_w'], C['thick'], C['corner'], colour_at)

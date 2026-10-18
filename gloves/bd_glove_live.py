@@ -13,7 +13,7 @@ import bd_glove_settings
 import bd_glove
 importlib.reload(bd_glove_settings)
 importlib.reload(bd_glove)
-from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, SHOW_AT, WEAR, BARE
+from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, SHOW_AT, WEAR, SCRATCH_LIGHTEN
 import bl
 import edit
 import bd_wear
@@ -44,6 +44,6 @@ def run(atlas_dir):
         if not bl.pick_mode_check(o, VOXEL_M):
             bl.split_to_cubes(o, VOXEL_M)
         edit.convert(o, VOXEL_M)
-    bd_wear.carve([o.name for o in objs.values()], WEAR, BARE)
+    bd_wear.carve([o.name for o in objs.values()], WEAR, lighten=SCRATCH_LIGHTEN)
     print("glove cubes:", len(cells))
     return objs
