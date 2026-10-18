@@ -10,17 +10,31 @@ import bd_settings
 import bd_gun
 importlib.reload(bd_settings)
 importlib.reload(bd_gun)
-from bd_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE, RIGHT_HAND_MOVE
+from bd_settings import VOXEL_M, PIVOT, COL, SHADE, NOISE, RIGHT_HAND_MOVE, EDGE_WEAR
+from bl import mix
 from bl import Space, make_objects
 
 COLLECTION = "BD shotgun"
 ROOT = "BD_Root"
-PARTS = {"body": "BD_body"}        # cube part -> Blender object
+PARTS = {"body": "BD_body", "pump": "BD_pump", "trigger": "BD_trigger"}     # cube part -> Blender object
+# the Ashes gun's own pieces, hidden once ours has a body (2026-10-18, Tefa: it "has to be different"); its hands stay
+ASHES_GUN = ("Shotgun_body", "Shotgun_pump", "Shotgun_trigger", "Shotgun_shield", "Shotgun_bolt", "Shotgun_flash",
+             "Shotgun_casing", "Shotgun_loadshell", "Shotgun_portshell")
 RIGHT_HAND = "Shotgun_righthand"   # the Ashes right hand's carrier, copied into this file as a reference
 
 
 def paint(cells):
-    return {c: COL[name] for c, name in cells.items()}
+    """Colour names -> sRGB, with the metal's long edges worn lighter where two of its sides are open."""
+    out = {}
+    for (x, y, z), name in cells.items():
+        rgb = COL[name]
+        if name == 'metal':
+            open_up = ((x, y, z + 1) not in cells) + ((x, y, z - 1) not in cells)
+            open_side = ((x, y + 1, z) not in cells) + ((x, y - 1, z) not in cells)
+            if open_up and open_side:
+                rgb = mix(rgb, COL['metal_hi'], EDGE_WEAR)
+        out[(x, y, z)] = rgb
+    return out
 
 
 def run(atlas_dir):
@@ -41,6 +55,11 @@ def run(atlas_dir):
             c.objects.unlink(o)
         col.objects.link(o)
     move_right_hand()
+    for n in ASHES_GUN:
+        o = bpy.data.objects.get(n)
+        if o:
+            o.hide_set(True)
+            o.hide_render = True
     print("cubes:", {k: len(v) for k, v in g.p.items()})
     return objs
 
