@@ -37,11 +37,15 @@ TIP_ROUND = 2                       # the last cubes of a finger lose their side
 # ---- the steel plates (step 2; the under-glove approved by Tefa 2026-10-18: "looks about right to me") ----
 # Each finger and thumb segment gets its own plate: its top row and upper sides turned to steel, plus one raised row,
 # with brown left bare at every joint so the plates read as separate pieces, as in the picture.
+# Tefa, 2026-10-18, on the first plates: "little bit bulkier please" -> one cube thicker, overhanging the fingers'
+# sides, and a bigger back plate.
 PLATE_GAP = 1                       # bare brown steps at each joint, between two plates
-KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2)      # one plate over each finger's knuckle
-BACK_PLATE = dict(x0=-10, x1=11, y0=4, y1=20, corner=3)            # the big plate on the back of the hand
-BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2)          # a smaller one stacked on it
-RIVETS = [(-8, 6), (9, 6), (-8, 18), (9, 18)]                      # bright bolt heads at the big plate's corners
+PLATE_RAISE = 2                     # cubes a plate stands above the glove
+PLATE_OVERHANG = 1                  # cubes a finger plate reaches past each side of the finger
+KNUCKLE_PLATE = dict(y0=PALM_L - 4, y1=PALM_L + 1, half_w=2, raise_=PLATE_RAISE)   # over each finger's knuckle
+BACK_PLATE = dict(x0=-11, x1=12, y0=3, y1=21, corner=3, raise_=PLATE_RAISE)        # the big plate on the back
+BACK_PLATE_TOP = dict(x0=-5, x1=6, y0=8, y1=16, corner=2, raise_=1)                # a smaller one stacked on it
+RIVETS = [(-9, 5), (10, 5), (-9, 19), (10, 19)]                    # bright bolt heads at the big plate's corners
 
 # ---- colours, sRGB 0-255, picked from the reference picture ----
 COL = dict(
