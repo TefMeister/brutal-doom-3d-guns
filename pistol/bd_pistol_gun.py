@@ -7,7 +7,7 @@ import math
 
 from bd_pistol_settings import (ROUND_SLACK, GRIP, GRIP_TEXTURE, GRIP_PLATE, MAG_BASE, TANG, FRAME, GUARD, TRIGGER,
                                 MODULE, RING, RAIL, SLIDE, DECK, REAR_SLOPE, DIAMONDS, PORT, CASE, COVER, SERRATIONS,
-                                REAR_SIGHT, FRONT_SIGHT, BARREL, COMP, MUZZLE)
+                                REAR_SIGHT, FRONT_SIGHT, BARREL, COMP, MUZZLE, VENT)
 from parts import Parts
 
 
@@ -144,6 +144,20 @@ def slide(g):
     for px in C['top_ports']:
         g.cut(px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'] + 1, C['z1'])
         recolour(g, px, px + C['port_w'] - 1, -2, 2, C['z1'] - C['port_depth'], C['z1'] - C['port_depth'], 'port')
+    V = VENT                                                             # the steam vent under the compensator
+    for z in range(V['z0'], V['z1'] + 1):
+        front = V['x1'] - round((V['z1'] - z) * V['lean'] / (V['z1'] - V['z0']))   # its nose leaning back
+        for x in range(V['x0'], front + 1):
+            for y in range(-V['y'], V['y'] + 1):
+                if (V['y'] - abs(y)) + min(z - V['z0'], x - V['x0']) < V['bevel']:
+                    continue
+                g.put('slide', x, y, z, 'metal')
+    for x in V['slots']:                                                 # slots both sides, dark inside
+        for sign in (-1, 1):
+            ys = sorted((sign * V['y'], sign * (V['y'] - V['slot_depth'] + 1)))
+            g.cut(x, x + V['slot_w'] - 1, ys[0], ys[1], V['slot_z'][0], V['slot_z'][1])
+            yb = sign * (V['y'] - V['slot_depth'])
+            recolour(g, x, x + V['slot_w'] - 1, yb, yb, V['slot_z'][0], V['slot_z'][1], 'port')
     E = SERRATIONS
     for x in range(E['x0'], E['x1'] + 1, E['step']):
         g.cut(x, x, -S['y'], -S['y'], E['z0'], E['z1'])

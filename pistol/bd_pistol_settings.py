@@ -70,6 +70,12 @@ BARREL = dict(x0=8, x1=64, zc=41, r=4.0)           # copper, under the windows; 
 # thin muzzle completely". Its length was 11 cubes (65-75): now 11 more behind and 33 more in front, the bore cut into
 # its front face with a bright crown, no barrel sticking out. Where it reaches back over the frame it wraps around it.
 COMP = dict(x0=54, x1=108, y=8, z0=31, z1=51, bevel=2, top_ports=(90, 94, 98, 102), port_w=2, port_depth=3)
+# Tefa: "it needs some sort of a thing at the bottom of the [compensator] ... that actually blows out steam from both
+# left and right sides when a mag is ejected". A vent box under the compensator's front with five slots on each side,
+# dark inside. The steam itself is a game effect for later; STEAM_POINTS are where it comes out, (x, z), both sides.
+VENT = dict(x0=68, x1=102, y=7, z0=23, z1=30, bevel=1, lean=3, slots=(73, 79, 85, 91, 97), slot_w=2, slot_z=(25, 28),
+            slot_depth=2)
+STEAM_POINTS = [(x + 0.5, 26.5) for x in VENT['slots']]
 FRONT_SIGHT = dict(x0=105, x1=106, y=1, z1=54, dot_z=53)   # top level with REAR_SIGHT's; 3 cubes wide, as one
                                                    # cube looked too thin from behind the rear sight
 MUZZLE = dict(bore=2.4, depth=6)                   # the bore into the compensator's front, its walls dark
@@ -100,7 +106,7 @@ FINE_RIDGES = [('both', 8, 4, (64, 36), (68, 46), 9, 4, 2)]
 # The military star in a ring on each grip plate: centred on the plate, in cubes.
 LOGO = dict(z=8, ring_r=4.75, ring_w=0.75, star_r=3.75, star_in=1.5, height=2)
 FINE_COL = dict(line=(4, 4, 4), screw=(40, 41, 45), ridge=(30, 31, 34), red=(176, 24, 20), white=(200, 200, 194),
-                ring=(30, 30, 33), star=(30, 30, 33))   # dark on the silver: a pale star did not show
+                ring=(10, 10, 11), star=(10, 10, 11))   # near black on the gunmetal plate
 
 # Carved scratches, as on the shotgun and the gloves: shorter, the pistol being small; a fraction lighter inside.
 WEAR = dict(seed=668, scratch_per_cm2=0.06, scratch_mm=(6.0, 22.0), along_share=0.75, gouge_share=0.1,
@@ -122,9 +128,9 @@ COL = dict(
     port=(9, 9, 10),
     grip=(11, 11, 12),
     grip_check=(20, 20, 22),
-    silver=(160, 163, 170),       # the grip plates
-    silver_hi=(205, 208, 214),
-    silver_dark=(104, 106, 112),
+    silver=(46, 49, 55),          # the grip plates. Tefa: "silver plates need to be the gun metal colour"
+    silver_hi=(66, 70, 77),
+    silver_dark=(32, 34, 38),
     sight_dot=(235, 235, 228),
 )
 EDGE_WEAR = 0.6                  # how far a worn metal edge goes toward metal_hi
