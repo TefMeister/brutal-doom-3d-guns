@@ -5,6 +5,9 @@
 # Tefa 2026-10-19: "can you see if you can get DOOM 1 working in VR with the brutal doom mod and our first 3 weapons
 # in it?" Each gun is exported as it stands in its .blend (gun + Doomguy's gloves), one pose for every sprite frame
 # of the Brutal Doom weapon it replaces: no animation yet.
+# 2026-10-19 (Tefa: "please animate the shooting animations, pump after each shotgun shot ... only the initial weapon
+# pick up animation"): the poses per sprite frame come from tools/gz_anim.py. The gun is written as one MD3 per slot
+# (<gun>_body.md3 + <gun>_<part>.md3), each with one frame per distinct pose it takes, and MODELDEF draws both.
 #
 # Why not ashes-2063-weapons/kit/gz_export.py as it is: our cube models keep their colours ON THE FACES (the corner
 # colour layer `cubekit_view`, what the viewport shows), with no UV map; the atlas images in the .blend are empty.
@@ -26,12 +29,15 @@ MAX_SURFACE_VERTS = 60000
 
 # gun -> (root empty, glove root, right glove object, Brutal Doom weapon class, its sprites)
 GUNS = {
-    "pistol":     ("BDP_Root", "BDP_Glove_Root", "BDP_glove_right", "BrutalPistol", ["PIST", "PISR", "PISS", "2ISR"]),
+    "pistol":     ("BDP_Root", "BDP_Glove_Root", "BDP_glove_right", "BrutalPistol", ["PIST", "PISR", "PISS", "PISI", "2ISR"]),
     "shotgun":    ("BD_Root",  "BD_Gloves_Root", "BD_glove_right",  "Shot_Gun",     ["SHTA", "SHTN", "SHT8"]),
-    "machinegun": ("BDM_Root", "BDM_Gloves_Root", "BDM_glove_right", "Rifle",       ["RIFG", "RIFF", "RIFR", "RIFZ", "RI2G", "2IFR"]),
+    "machinegun": ("BDM_Root", "BDM_Gloves_Root", "BDM_glove_right", "Rifle",       ["RIFG", "RIFF", "RIFR", "RIFZ", "RI2G", "2IFR", "3IFR"]),
 }
 ROOT, GLOVES, RIGHT_GLOVE, ACTOR, SPRITES = GUNS[GUN]
-LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"   # every frame letter of those sprites shows the gun (no animation yet)
+LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ["   # every frame letter of those sprites shows the gun ("[" = Doom's 27th)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gz_anim
+ANIM = gz_anim.GUNS[GUN]
 UNITS_PER_M = 100                        # VR: the model hangs off the controller in centimetres
 GRIP_FROM_ORIGIN = Vector((0.0, 0.20, -0.16))   # the Ashes revolver's tuned grip spot (see the header)
 MODEL_PATH = "models/bd3dguns/" + GUN
@@ -75,7 +81,11 @@ def srgb(c):   # the colour layer is linear; the PNG is sRGB
 
 
 dg = bpy.context.evaluated_depsgraph_get()
-faces = []                     # (three corners [(pos, normal)], colour key)
+slot_of = {}                   # mesh name -> slot index; a part no slot names goes with the body (slot 0)
+for si, (_, names) in enumerate(ANIM["slots"]):
+    for nm in names:
+        slot_of[nm] = si
+slot_faces = [[] for _ in ANIM["slots"]]   # per slot: (three corners [(pos m, normal)], colour key)
 for o in meshes:
     eo = o.evaluated_get(dg)
     me = eo.to_mesh()
@@ -84,6 +94,9 @@ for o in meshes:
         print(f"  skipped {o.name}: no cubekit colour layer")
         eo.to_mesh_clear()
         continue
+    if o.name not in slot_of:
+        print(f"  {o.name}: in no animation slot, moves with the body")
+    faces = slot_faces[slot_of.get(o.name, 0)]
     M = inv @ eo.matrix_world
     R = M.to_3x3()
     n_before = len(faces)
@@ -93,10 +106,11 @@ for o in meshes:
         n = (R @ poly.normal).normalized()
         loops = list(poly.loop_indices)
         for k in range(1, len(loops) - 1):
-            tri = [(to_md3(M @ me.vertices[me.loops[li].vertex_index].co), (n.y, n.x, n.z)) for li in (loops[0], loops[k + 1], loops[k])]
+            tri = [(tuple(M @ me.vertices[me.loops[li].vertex_index].co), tuple(n)) for li in (loops[0], loops[k + 1], loops[k])]
             faces.append((tri, key))
     eo.to_mesh_clear()
-    print(f"  {o.name}: {len(faces) - n_before} triangles")
+    print(f"  {o.name}: {len(faces) - n_before} triangles (slot {ANIM['slots'][slot_of.get(o.name, 0)][0]})")
+faces = [f for fs in slot_faces for f in fs]
 
 palette = sorted({key for _, key in faces})
 side = 1
@@ -121,23 +135,62 @@ with open(os.path.join(OUT, png), "wb") as f:
     f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", side, side, 8, 2, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
 
-verts, uvs = [], []
-for tri, key in faces:
-    i = index[key]
-    uv = ((i % side + 0.5) / side, 1.0 - (i // side + 0.5) / side)   # the writer flips t back
-    for v in tri:
-        verts.append(v)
-        uvs.append(uv)
-tris = [(j, j + 1, j + 2) for j in range(0, len(uvs), 3)]
-nsurf, nv, nt = write_md3(os.path.join(OUT, GUN + ".md3"), GUN, [verts], (tris, uvs), f"{MODEL_PATH}/{png}")
-print(f"{GUN}: {nt} triangles, {nsurf} surfaces, {len(palette)} colours in a {side}x{side} palette")
+# the poses: every sprite frame the gun shows -> (pose, travel); the rest pose is always frame 0
+keys = {(spr, L): gz_anim.pose_of(GUN, spr, L) for spr in SPRITES for L in LETTERS}
+pivot = tuple(grip)
 
-lines = [f"// Generated by brutal-doom-3d-guns/tools/gz_vr_export.py ({GUN}). Do not edit by hand.",
-         f"Model {ACTOR}", "{", f'   Path "{MODEL_PATH}"', f'   Model 0 "{GUN}.md3"', f'   Skin 0 "{png}"']
-lines += [f'   SurfaceSkin 0 {i} "{png}"' for i in range(nsurf)]
+
+import numpy as np
+O = np.array(tuple(origin))
+
+
+def md3_frame(P, N, R, tr):   # every corner of a slot in one pose, as the MD3 writer wants them (numpy: 2026-10-19,
+    R = np.array(R)            # the per-corner Python maths took over 20 minutes for the shotgun)
+    q = (P @ R.T + np.array(tr) - O) * UNITS_PER_M
+    m = N @ R.T
+    return list(zip(map(tuple, q[:, [1, 0, 2]].tolist()), map(tuple, m[:, [1, 0, 2]].tolist())))
+
+
+models = []                    # (md3 file, surfaces, {pose key: frame number})
+for si, (sname, _) in enumerate(ANIM["slots"]):
+    faces_s = slot_faces[si]
+    if not faces_s:
+        print(f"{GUN}: slot {sname} is empty")
+        continue
+    poses = [("rest", 0.0)]
+    for k in sorted(set(keys.values())):
+        k = k if si > 0 else (k[0], 0.0)   # the body never slides
+        if k not in poses:
+            poses.append(k)
+    uvs = []
+    for tri, key in faces_s:
+        i = index[key]
+        uvs += [((i % side + 0.5) / side, 1.0 - (i // side + 0.5) / side)] * 3   # the writer flips t back
+    tris = [(j, j + 1, j + 2) for j in range(0, len(uvs), 3)]
+    P = np.array([p for tri, _ in faces_s for p, _ in tri])
+    N = np.array([n for tri, _ in faces_s for _, n in tri])
+    frames = []
+    for pose, travel in poses:
+        R, tr = gz_anim.pose_transform(GUN, pose, travel, pivot, si)
+        frames.append(md3_frame(P, N, R, tr))
+    md3 = f"{GUN}_{sname}.md3"
+    nsurf, nv, nt = write_md3(os.path.join(OUT, md3), f"{GUN}_{sname}", frames, (tris, uvs), f"{MODEL_PATH}/{png}")
+    models.append((md3, nsurf, {k: fi for fi, k in enumerate(poses)}))
+    print(f"{GUN}: {md3}: {nt} triangles, {nsurf} surfaces, {len(frames)} frames "
+          f"({os.path.getsize(os.path.join(OUT, md3)) // 1048576} MB)")
+print(f"{GUN}: {len(palette)} colours in a {side}x{side} palette")
+
+lines = [f"// Generated by brutal-doom-3d-guns/tools/gz_vr_export.py ({GUN}) with tools/gz_anim.py. Do not edit by hand.",
+         f"Model {ACTOR}", "{", f'   Path "{MODEL_PATH}"']
+for mi, (md3, nsurf, _) in enumerate(models):
+    lines += [f'   Model {mi} "{md3}"', f'   Skin {mi} "{png}"']
+    lines += [f'   SurfaceSkin {mi} {i} "{png}"' for i in range(nsurf)]
 lines += ["   Scale 1.0 1.0 1.0", "   NOINTERPOLATION", ""]
 for spr in SPRITES:
-    lines += [f"   FrameIndex {spr} {L} 0 0" for L in LETTERS]
+    for L in LETTERS:
+        pose, travel = keys[(spr, L)]
+        for mi, (_, _, frame_of) in enumerate(models):
+            lines.append(f"   FrameIndex {spr} {L} {mi} {frame_of[(pose, travel if mi > 0 else 0.0)]}")
 lines += ["}"]
 with open(os.path.join(OUT, f"modeldef.{GUN}.txt"), "w") as f:
     f.write("\n".join(lines) + "\n")
