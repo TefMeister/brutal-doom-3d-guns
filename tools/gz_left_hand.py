@@ -1,0 +1,106 @@
+# Doomguy's free LEFT hand for GZDoom VR: the approved right glove from the pistol, mirrored into a true left hand, drawn
+# on the left controller while a one-handed weapon is out (2026-10-19, Tefa: "can you try to get the left hand to follow
+# left motion controller with one handed weapons in both doom and ashes 2063 ... don't change the side where the thumb
+# is").
+#   blender.exe -b <pistol .blend> --python tools/gz_left_hand.py -- <out folder>
+#
+# Why a mirror is right HERE, when it was the cause of the Ashes left hand going wrong (2026-09-22/23): mirroring a hand
+# turns it into the other hand. That was the bug when a mirror was used to "move the thumb" of a hand that was already
+# left; here the start is a RIGHT hand, so its mirror IS the left hand, thumb on a left hand's side. And it is mirrored
+# across the controller's own left/right, because a left hand holds its controller as the mirror of how the right hand
+# holds the right one (thumb on top, back of the hand facing out, fingers round the handle): the two controllers share
+# the same axes, the hands do not. Nothing is rolled or turned afterwards.
+#
+# Drawn as an ordinary actor at the off hand's pose (FollowOffhand, OffhandPos/Angle/Pitch/Roll: our GZDoomVR build,
+# the same route as the Ashes lantern): MD3 x = forward, y = right, z = up, 34 map units a metre (vr_vunits_per_meter),
+# origin = the middle of the closed hand, where the controller's handle is.
+import bpy, sys, os, struct, zlib
+from mathutils import Vector
+
+OUT = os.path.abspath(sys.argv[sys.argv.index("--") + 1])
+KIT = os.path.join(os.path.expanduser("~"), "github-backups", "ashes-2063-weapons", "kit")
+exec(open(os.path.join(KIT, "gz_md3.py")).read())
+MAX_SURFACE_VERTS = 60000          # GZDoom takes at most 32 surfaces; it indexes them in 32 bit (gz_vr_export.py)
+UNITS_PER_M = 34                    # vr_vunits_per_meter in doom-vr.ini: world actors, not the weapon's hand space
+GLOVE, ROOT = "BDP_glove_right", "BDP_Glove_Root"
+NAME = "bd_left_hand"
+MODEL_PATH = "models/bd3dguns/lefthand"
+
+sc = bpy.context.scene
+g = sc.objects[GLOVE]
+inv = sc.objects[ROOT].matrix_world.inverted()
+M = inv @ g.matrix_world
+pts = [M @ Vector(c) for c in g.bound_box]
+# the middle of the fist, front to back and top to bottom; across, the gun's middle line (Blender X 0), which is where
+# the handle runs through the hand
+cy = (min(p.y for p in pts) + max(p.y for p in pts)) / 2
+cz = (min(p.z for p in pts) + max(p.z for p in pts)) / 2
+print(f"{NAME}: fist centre Y {cy:.3f} Z {cz:.3f} (root metres)")
+
+
+def srgb(c):
+    c = max(0.0, min(1.0, c))
+    return int(round(255 * (12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055)))
+
+
+dg = bpy.context.evaluated_depsgraph_get()
+eo = g.evaluated_get(dg)
+me = eo.to_mesh()
+col = me.attributes.get("cubekit_view") or me.attributes.get("cubekit_base")
+R = M.to_3x3()
+faces = []
+for poly in me.polygons:
+    c = col.data[poly.loop_start].color
+    key = (srgb(c[0]), srgb(c[1]), srgb(c[2]))
+    n = (R @ poly.normal).normalized()
+    nm = (n.y, -n.x, n.z)                       # mirrored (X -> -X), then MD3 (forward, right, up)
+    loops = list(poly.loop_indices)
+    for k in range(1, len(loops) - 1):
+        tri = []
+        # mirror + the axis swap into MD3 are two flips: they cancel, so the corner order stays as Blender has it
+        for li in (loops[0], loops[k], loops[k + 1]):
+            p = M @ me.vertices[me.loops[li].vertex_index].co
+            tri.append((((p.y - cy) * UNITS_PER_M, -p.x * UNITS_PER_M, (p.z - cz) * UNITS_PER_M), nm))
+        faces.append((tri, key))
+eo.to_mesh_clear()
+
+palette = sorted({k for _, k in faces})
+side = 1
+while side * side < len(palette):
+    side *= 2
+index = {k: i for i, k in enumerate(palette)}
+rows = []
+for y in range(side):
+    row = bytearray(b"\x00")
+    for x in range(side):
+        i = y * side + x
+        row += bytes(palette[i]) if i < len(palette) else b"\x00\x00\x00"
+    rows.append(bytes(row))
+
+
+def chunk(tag, data):
+    return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+
+os.makedirs(OUT, exist_ok=True)
+png = NAME + ".png"
+with open(os.path.join(OUT, png), "wb") as f:
+    f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", side, side, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
+verts, uvs = [], []
+for tri, key in faces:
+    i = index[key]
+    uv = ((i % side + 0.5) / side, 1.0 - (i // side + 0.5) / side)
+    for v in tri:
+        verts.append(v)
+        uvs.append(uv)
+tris = [(j, j + 1, j + 2) for j in range(0, len(uvs), 3)]
+nsurf, nv, nt = write_md3(os.path.join(OUT, NAME + ".md3"), NAME, [verts], (tris, uvs), f"{MODEL_PATH}/{png}")
+print(f"{NAME}: {nt} triangles, {nsurf} surfaces, {len(palette)} colours")
+with open(os.path.join(OUT, "modeldef." + NAME + ".txt"), "w") as f:
+    f.write("\n".join([f"// Generated by brutal-doom-3d-guns/tools/gz_left_hand.py. Do not edit by hand.",
+                       "Model BDLeftHand", "{", f'   Path "{MODEL_PATH}"', f'   Model 0 "{NAME}.md3"', f'   Skin 0 "{png}"']
+                      + [f'   SurfaceSkin 0 {i} "{png}"' for i in range(nsurf)]
+                      + ["   Scale 1.0 1.0 1.0", "   AngleOffset 0", "   NOINTERPOLATION", "   USEACTORPITCH",
+                         "   USEACTORROLL", "   FrameIndex BDLH A 0 0", "}"]) + "\n")
+print(f"{NAME}: written to {OUT}")
