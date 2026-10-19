@@ -37,3 +37,13 @@ sprites. The machine gun's left hand does not go to the charging handle yet (a h
 - Builds (never in git): `D:/MEGA transfer/Game Files/brutal-doom-3d-guns/gzdoom/vr-test-anim/` (the static first
   test kept in `gzdoom/archive/2026-10-19-static-first-test/`).
 - Launcher: `D:/Brutal Doom/Play Doom 1 - Brutal Doom VR (3D guns animated test).bat` (the static one is unchanged).
+
+## Built and checked (2026-10-19, home PC)
+
+- Exported: shotgun body 7 frames (36 MB) + pump 13 frames (17 MB); pistol body 13 (23 MB) + slide 19 (20 MB);
+  machine gun body 14 (72 MB) + charging handle 18. Packed: `vr-test-anim/bd3dguns_vr_anim_test.pk3`, 51 MB zipped.
+  The files are big because MD3 stores every corner again for each pose; merging the cube faces would shrink them.
+- Export time 22-48 minutes per gun (the MD3 writer packs each corner one by one in Python): worth a numpy writer.
+- Flat start (throwaway settings, vr_mode 0): E1M1 loads with Brutal Doom and the animated pk3, no model or MODELDEF
+  errors in the log `[verified-live 2026-10-19, n=1, flat]`. The guns themselves were not seen moving yet (the game
+  window was behind other windows); that is the headset look with Tefa.
