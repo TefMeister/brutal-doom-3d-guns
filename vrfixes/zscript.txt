@@ -11,6 +11,11 @@ version "4.10"
 //
 // Spent shells (Tefa, the same day: "please fix them too"): every gun throws its casings with an invisible spawner
 // fired 9 to 26 units low for the same flat-screen reason. The spawners are lifted the same way before they act.
+//
+// Every gun, checked (2026-10-19, Tefa: "go over all of them to see if others have the same fault"): plasma balls,
+// rockets (rocket, nuke, incendiary), Devastator missiles, flamethrower / flame cannon fire and dropped clips are fired
+// 3 to 12 units low too. So the rule is general: anything the player fires as a missile from beside the gun hand starts
+// at the gun hand's height. Melee "missiles" (kicks, the axe, the chainsaw, punches, grabs) keep their heights on purpose.
 
 class BDVRFixesHandler : EventHandler
 {
@@ -19,18 +24,23 @@ class BDVRFixesHandler : EventHandler
 
 	override void WorldThingSpawned(WorldEvent e)
 	{
-		static const Name lifted[] = { 'DecorativeTracer', 'PistolCaseSpawn', '50CaseSpawn2', 'ShotCaseSpawn',
-			'RifleCaseSpawn', 'PlasmaCaseSpawn', 'SSGCaseSpawner', 'RocketCaseSpawn', 'GrenadeCasingSpawner' };
+		static const Name spawners[] = { 'PistolCaseSpawn', '50CaseSpawn2', 'ShotCaseSpawn', 'RifleCaseSpawn',
+			'PlasmaCaseSpawn', 'SSGCaseSpawner', 'RocketCaseSpawn', 'GrenadeCasingSpawner', 'EmptyASGAmmoSpawn',
+			'EmptyClip2Spawn', 'EmptyClipSpawn', 'EmptySniperAmmoSpawn' };
+		static const String melee[] = { "Attack", "Kick", "Strike", "Melee", "Saw", "Pick", "Grab", "LostSoul", "LSOHK" };
 		let t = e.Thing;
 		if (!t) return;
 		Name cls = t.GetClassName();
-		bool ours = false;
-		for (int i = 0; i < lifted.Size(); i++) if (cls == lifted[i]) { ours = true; break; }
+		String scls = cls;
+		for (int i = 0; i < melee.Size(); i++) if (scls.IndexOf(melee[i]) >= 0) return;
+		bool ours = t.bMISSILE;
+		for (int i = 0; i < spawners.Size() && !ours; i++) if (cls == spawners[i]) ours = true;
 		if (!ours) return;
 		let pmo = players[consoleplayer].mo;
 		if (!pmo || t.target != pmo || !pmo.OverrideAttackPosDir) return;
 		double dz = pmo.AttackPos.Z - t.pos.Z;
 		if (abs(dz) > 48) return;      // not from the gun hand: leave it
+		if ((t.pos.XY - pmo.AttackPos.XY).Length() > 64) return;   // fired from somewhere else (a turret, a vehicle)
 		if (logged < 12)
 		{
 			logged++;
