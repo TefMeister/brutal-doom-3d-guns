@@ -1,0 +1,45 @@
+version "4.10"
+// Doomguy's free left hand on the left controller while a one-handed weapon is out (brutal-doom-3d-guns,
+// tools/gz_left_hand.py, 2026-10-19). Needs our GZDoomVR build (ashes-2063-weapons/engine): OffhandValid,
+// OffhandPos / OffhandAngle / OffhandPitch / OffhandRoll, and FollowOffhand (drawn at the off hand's pose every
+// rendered frame, like the weapon). The model is the approved right glove from the pistol, mirrored into a left hand.
+
+class BDLeftHand : Actor
+{
+	Default { +NOGRAVITY +NOBLOCKMAP +NOINTERACTION +DONTSPLASH +NOTONAUTOMAP }
+	States { Spawn: BDLH A -1; Stop; }
+}
+
+class BDLeftHandHandler : EventHandler
+{
+	Actor hand;
+
+	bool IsOneHanded(PlayerInfo p)
+	{
+		// held in the right hand alone: the left hand is free (two-handed guns carry their own left glove)
+		static const String oneHanded[] = { "BrutalPistol", "Revolver", "HandGrenades" };
+		if (!p || !p.ReadyWeapon) return false;
+		String cls = p.ReadyWeapon.GetClassName();
+		for (int i = 0; i < 3; i++) if (cls ~== oneHanded[i]) return true;
+		return false;
+	}
+
+	override void WorldTick()
+	{
+		let pmo = players[consoleplayer].mo;
+		if (!pmo) return;
+		bool want = pmo.OffhandValid && IsOneHanded(players[consoleplayer]);
+		if (!hand && want)
+		{
+			hand = Actor.Spawn("BDLeftHand", pmo.OffhandPos);
+			hand.FollowOffhand = true;
+		}
+		if (!hand) return;
+		hand.bInvisible = !want;
+		if (!want) return;
+		hand.SetOrigin(pmo.OffhandPos, true);
+		hand.angle = pmo.OffhandAngle;
+		hand.pitch = pmo.OffhandPitch;   // the hand tips and turns with the wrist
+		hand.roll = pmo.OffhandRoll;
+	}
+}
