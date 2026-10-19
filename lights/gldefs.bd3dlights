@@ -1,0 +1,34 @@
+// Bigger glows on the guns and gloves (brutal-doom-3d-guns, 2026-10-19, Tefa: "make things emit lights ... the exploding
+// barrel in doom to emit green glow on the weapon"). Brutal Doom's own barrel glow (GREENGOOZ) is size 22, about 65 cm
+// at 34 map units a metre, so it only reached a gun held against the barrel. Loaded after Brutal Doom, so these win.
+
+pulselight TEFA_BARRELGLOW
+{
+    color 0.25 1.0 0.1
+    size 64
+    secondarySize 76
+    interval 0.6
+    offset 0 30 0
+    dontlightself 1
+}
+
+flickerlight2 TEFA_FIREBARREL
+{
+    color 1.0 0.45 0.1
+    size 88
+    secondarySize 110
+    interval 0.08
+    offset 0 36 0
+    dontlightself 1
+}
+
+object ExplosiveBarrel1
+{
+    frame BAR1 { light TEFA_BARRELGLOW }
+    frame BARB { light TEFA_BARRELGLOW }
+}
+
+object BurningBarrel1
+{
+    frame BURB { light TEFA_FIREBARREL }
+}
