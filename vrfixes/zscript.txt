@@ -1,0 +1,31 @@
+version "4.10"
+// VR fixes for Brutal Doom with our 3D guns (brutal-doom-3d-guns, 2026-10-19).
+//
+// Tracers from the gun hand (Tefa: "bullets seem to fly out of the bottom of the screen, about 10-20cm below the gun
+// for anything other than the pistol"). Brutal Doom fires its visible tracer (DecorativeTracer) with a spawn height of
+// -12 for the shotgun and the rifle, which on a flat screen lines it up with the gun picture at the bottom of the view;
+// the pistol uses 0. In VR the spawn point is the controller (AttackPos), so -12 puts the tracer about 35 cm under the
+// gun (12 map units at 34 a metre). Each tracer the player fires is lifted to the gun hand's height the moment it
+// spawns, so every gun matches the pistol. Flat play (no VR attack position) is left alone.
+
+class BDVRFixesHandler : EventHandler
+{
+	int logged;
+
+	override void WorldThingSpawned(WorldEvent e)
+	{
+		let t = e.Thing;
+		if (!t || t.GetClassName() != 'DecorativeTracer') return;
+		let pmo = players[consoleplayer].mo;
+		if (!pmo || t.target != pmo || !pmo.OverrideAttackPosDir) return;
+		double dz = pmo.AttackPos.Z - t.pos.Z;
+		if (abs(dz) > 48) return;      // not from the gun hand: leave it
+		if (logged < 6)
+		{
+			logged++;
+			Console.Printf("bd3d vr fix: tracer from %s lifted %.1f units to the gun hand",
+				pmo.player.ReadyWeapon ? pmo.player.ReadyWeapon.GetClassName() : 'none', dz);
+		}
+		t.SetOrigin((t.pos.X, t.pos.Y, pmo.AttackPos.Z), false);
+	}
+}
