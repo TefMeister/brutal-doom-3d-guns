@@ -12,6 +12,7 @@ NADE = (70, 110, 50)
 
 def build():
     m = Model("bd_grenade_launcher")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (48, 0, 0)
     armour(m, 30, 70, 14.0, 2, 26, fp.metal(METAL_MID), bevel=2.5, panel=PANEL)
     # the drum
@@ -26,25 +27,32 @@ def build():
     hazard(m, 70, 76, -16, 16, 0, 32, step=2.0)
     m.cyl(68, 112, 0, Z_AXIS, 2.4, fp.metal(METAL_HI), edge=0.25)
     m.part = 'body'
+    m.part = 'barrel'
     # barrel and front ring, a frame round the drum
     m.cyl(110, 150, 0, Z_AXIS + 8.5, 4.6, fp.metal(METAL), edge=0.25)
     m.cyl(144, 152, 0, Z_AXIS + 8.5, 5.6, fp.metal(METAL_HI), edge=0.25)
     m.cyl(146, 153, 0, Z_AXIS + 8.5, 3.4, None, edge=0.25, carve=True)
+    m.part = 'frame'
     for z in (Z_AXIS - 15, Z_AXIS + 15):
         m.cbox(70, 112, 4.0, z - 1, z + 1, fp.metal(METAL), size=0.5)
     m.cbox(110, 116, 10.0, Z_AXIS - 16, Z_AXIS + 14, fp.metal(METAL), bevel=1.5, edge=0.5)
+    m.part = 'sight'
     # ladder sight
     m.cbox(126, 132, 6.0, Z_AXIS + 13, Z_AXIS + 15, fp.metal(METAL), size=0.5)
     for y in (-2.5, 2.0):
         m.box(128, 130, y, y + 0.5, Z_AXIS + 15, Z_AXIS + 24, fp.metal(METAL), size=0.25)
     for z in range(int(Z_AXIS) + 16, int(Z_AXIS) + 24, 2):
         m.box(128, 130, -2.5, 2.5, z, z + 0.25, GREEN if z == int(Z_AXIS) + 20 else fp.metal(METAL_HI), size=0.25)
+    m.part = 'stock'
     # skeleton stock, grip, fore-grip
     m.cprism([(-10, -6), (-10, 22), (30, 24), (30, 6), (10, -6)], 8.0, fp.metal(METAL), bevel=2.0, edge=0.5)
     m.prism([(-4, 0), (-4, 16), (24, 18), (24, 8), (10, 0)], -5, 5, None, size=0.5, carve=True)
+    m.part = 'grip'
     m.cprism([(44, 2), (36, 0), (30, -18), (40, -20), (48, -6), (52, 2)], 9.0, fp.metal(METAL), bevel=2.0, edge=0.5)
+    m.part = 'guard'
     fp.guard(m, 50, 66, -7, 2, fp.metal(METAL))
     fp.trigger(m, 56, 2, fp.metal(METAL_HI), length=6)
+    m.part = 'foregrip'
     m.cprism([(118, Z_AXIS - 15), (114, -14), (122, -16), (126, Z_AXIS - 15)], 7.0, fp.metal(METAL), bevel=1.5,
              edge=0.5)
     for side in ('+y', '-y'):

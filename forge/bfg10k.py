@@ -12,7 +12,9 @@ Z_AXIS = 22.0
 
 def build():
     m = Model("bd_bfg10k")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (60, 0, 0)
+    m.part = 'reactor'
     # the reactor drum at the back
     m.cyl(0, 60, 0, Z_AXIS, 18.0, fp.metal(PANEL_DK), edge=0.5)
     for x in (4, 26, 52):
@@ -20,6 +22,7 @@ def build():
     hazard(m, 8, 26, -20, 20, Z_AXIS - 20, Z_AXIS + 20, step=3.0)
     m.cyl(-2, 2, 0, Z_AXIS, 10.0, GLOW, edge=0.25)
     m.cyl(-3, 0, 0, Z_AXIS, 6.0, (230, 255, 230), edge=0.25)
+    m.part = 'barrel'
     # the hexagonal barrel of plates, energy in the seams
     for k in range(6):
         a = k * math.pi / 3
@@ -36,16 +39,20 @@ def build():
         m.box(212, 230, math.cos(a) * 20 - 1.5, math.cos(a) * 20 + 1.5, Z_AXIS + math.sin(a) * 20 - 1.5,
               Z_AXIS + math.sin(a) * 20 + 1.5, fp.metal(METAL), size=0.5, keep=True)
     m.part = 'body'
+    m.part = 'muzzle'
     m.cyl(230, 240, 0, Z_AXIS, 12.0, fp.metal(METAL), edge=0.5)
     m.cyl(234, 241, 0, Z_AXIS, 8.0, None, edge=0.5, carve=True)
     m.ball(236, 0, Z_AXIS, 7.0, GLOW, edge=0.25)
+    m.part = 'grip'
     # grip, side handles, a status display
     m.cprism([(70, Z_AXIS - 10), (62, Z_AXIS - 12), (56, -10), (66, -12), (74, 0), (80, Z_AXIS - 10)], 11.0,
              fp.metal(METAL), bevel=2.0, edge=0.5)
     fp.trigger(m, 84, Z_AXIS - 10, fp.metal(METAL_HI), length=7)
+    m.part = 'handles'
     for y in (-1, 1):
         m.cyl(y * 16, y * 26, 140, Z_AXIS, 2.2, fp.metal(METAL), axis='y', edge=0.25)
         m.cyl(Z_AXIS - 12, Z_AXIS + 6, 140, y * 27, 2.6, (34, 34, 36), axis='z', edge=0.25)
+    m.part = 'display'
     m.cbox(30, 50, 10.0, Z_AXIS + 17, Z_AXIS + 22, fp.metal(METAL), bevel=1.0, edge=0.25)
     m.box(32, 48, -3, 3, Z_AXIS + 21.75, Z_AXIS + 22.25, (10, 40, 14), size=0.25)
     for i in range(7):

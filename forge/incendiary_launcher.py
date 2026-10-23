@@ -12,6 +12,7 @@ TUBE = 9.0                             # each square tube's outside width
 
 def build():
     m = Model("bd_incendiary_launcher")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (70, 0, 0)
     # the four tubes as one block with grooves between them
     m.cbox(0, 180, 2 * TUBE, Z_AXIS - TUBE, Z_AXIS + TUBE, fp.metal(OLIVE, 0.08), bevel=1.5, edge=0.5)
@@ -31,6 +32,7 @@ def build():
     m.box(178, 180, -TUBE, TUBE, Z_AXIS + TUBE, Z_AXIS + TUBE + 18, fp.metal(OLIVE_DK), size=0.5, bevel=0.5)
     m.part = 'body'
     m.cyl(-TUBE, TUBE, 179, Z_AXIS + TUBE, 1.0, fp.metal(METAL_HI), axis='y', edge=0.25)
+    m.part = 'sight'
     # sight frame on the left, grips, firing box, shoulder pad
     m.cbox(100, 104, 4.0, Z_AXIS + TUBE, Z_AXIS + TUBE + 2, fp.metal(METAL), size=0.5)
     m.box(100, 104, TUBE, TUBE + 10, Z_AXIS + TUBE - 2, Z_AXIS + TUBE, fp.metal(METAL), size=0.5)
@@ -39,12 +41,16 @@ def build():
     m.prism([(101, Z_AXIS + TUBE + 2), (101, Z_AXIS + TUBE + 10), (103, Z_AXIS + TUBE + 10),
              (103, Z_AXIS + TUBE + 2)], TUBE + 8, TUBE + 10, None, size=0.5, carve=True)
     m.box(101.5, 102.5, TUBE + 8.5, TUBE + 9.5, Z_AXIS + TUBE + 5.5, Z_AXIS + TUBE + 6.5, GREEN, size=0.25)
+    m.part = 'grip'
     m.cprism([(70, Z_AXIS - TUBE), (62, Z_AXIS - TUBE - 4), (58, -14), (68, -16), (74, -4), (80, Z_AXIS - TUBE)],
              9.0, fp.metal(METAL), bevel=2.0, edge=0.5)
     fp.trigger(m, 82, Z_AXIS - TUBE, fp.metal(METAL_HI), length=6)
+    m.part = 'firing_box'
     m.cbox(84, 104, 10.0, -2, Z_AXIS - TUBE, fp.metal(OLIVE_DK), bevel=1.5, edge=0.5)
+    m.part = 'foregrip'
     m.cprism([(120, Z_AXIS - TUBE), (116, -10), (124, -12), (130, Z_AXIS - TUBE)], 8.0, fp.metal(METAL), bevel=1.5,
              edge=0.5)
+    m.part = 'shoulder_pad'
     m.cbox(10, 40, 12.0, Z_AXIS - TUBE - 4, Z_AXIS - TUBE, (36, 34, 30), bevel=1.0, edge=0.25)
     for side in ('+y', '-y'):
         m.decal(HAZARD_TRI, 60, Z_AXIS + 6, side, CAUTION, mode='paint')

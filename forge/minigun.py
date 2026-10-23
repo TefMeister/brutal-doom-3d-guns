@@ -14,6 +14,7 @@ BARREL_RING = 6.0                      # how far each barrel sits off the axis
 
 def build():
     m = Model("bd_minigun")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (30, 0, 0)
     hx0, hx1, hz0, hz1, hw = HOUSING
     armour(m, hx0, hx1, hw, hz0, hz1, fp.metal(METAL_MID), bevel=4.0, panel=PANEL_DK)
@@ -33,11 +34,13 @@ def build():
                   fp.metal(METAL_HI), edge=0.25)
     m.cyl(hx1 + 8, 214, 0, Z_AXIS, 2.4, fp.metal(METAL_MID), edge=0.25)                 # the hub
     m.part = 'body'
+    m.part = 'handle'
     # carry handle: an arch on top with a grip wrapped in tape
     for i in range(60):
         t = i / 59
         x, z = 34 + t * 40, hz1 + math.sin(t * math.pi) * 12
         m.ball(x, 0, z, 2.0, fp.metal(METAL) if t < 0.2 or t > 0.8 else (34, 34, 36), edge=0.25)
+    m.part = 'grips'
     # spade grips at the back, a thumb trigger between them
     for y in (-8, 8):
         m.cyl(-14, hx0, y, 10, 2.4, fp.metal(METAL), edge=0.25)

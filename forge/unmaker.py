@@ -16,9 +16,11 @@ def black_bone(x, y, z):
 
 def build():
     m = Model("bd_unmaker")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (40, 0, 0)
     # the long skull body, its jaw opening at the front
     m.ball(80, 0, Z_AXIS, 70.0, black_bone, ry=13.0, rz=13.0, edge=0.5)
+    m.part = 'head'
     m.ball(150, 0, Z_AXIS - 2, 14.0, black_bone, ry=15.0, rz=13.0, edge=0.5)                 # the skull's head
     m.cyl(150, 168, 0, Z_AXIS - 4, 7.0, None, r1=9.0, edge=0.25, carve=True)                 # the mouth
     m.cyl(148, 151, 0, Z_AXIS - 4, 7.0, HELL_RED, size=0.25, edge=0.25)
@@ -29,6 +31,7 @@ def build():
     for y in (-6, 6):                                                                       # glowing eyes
         m.ball(158, y, Z_AXIS + 5, 3.0, None, edge=0.25, carve=True)
         m.ball(156.5, y, Z_AXIS + 5, 2.0, HELL_RED, edge=0.25)
+    m.part = 'horns'
     # three horns sweeping back from the head
     for side, (y0, z0) in ((0, (0, Z_AXIS + 12)), (1, (11, Z_AXIS + 6)), (-1, (-11, Z_AXIS + 6))):
         for i in range(40):
@@ -37,6 +40,7 @@ def build():
             y = y0 + side * t * 6
             z = z0 + math.sin(t * math.pi * 0.8) * 10 + t * 4
             m.ball(x, y, z, 3.0 * (1 - t) + 0.6, BONE, edge=0.25)
+    m.part = 'ribs'
     # bone ribs along the sides, red veins between them
     for x in range(40, 132, 9):
         for i in range(24):
@@ -47,10 +51,12 @@ def build():
         for i in range(6):
             m.groove([(45 + i * 15, Z_AXIS - 4), (50 + i * 15, Z_AXIS + 5), (54 + i * 15, Z_AXIS - 2)], side,
                      depth=1, col=HELL_RED)
+    m.part = 'grip'
     # grip of wrapped sinew, a bone trigger
     m.cprism([(60, Z_AXIS - 10), (52, Z_AXIS - 12), (46, -12), (56, -14), (62, -2), (68, Z_AXIS - 10)], 10.0,
              lambda x, y, z: mix(FLESH, (90, 30, 28), (int(z) % 3) / 3), bevel=2.0, edge=0.5)
     fp.trigger(m, 72, Z_AXIS - 10, BONE, length=7)
+    m.part = 'butt'
     m.ball(10, 0, Z_AXIS, 12.0, black_bone, edge=0.5)
     m.ball(2, 0, Z_AXIS, 5.0, HELL_RED, edge=0.25)
     m.wear_edges(0.25, (140, 120, 110))

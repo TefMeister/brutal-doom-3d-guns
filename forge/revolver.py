@@ -13,6 +13,7 @@ FRAME = [(0, 2), (0, 18), (8, 20), (36, 20), (36, 3), (28, 0), (10, -2)]
 
 def build():
     m = Model("bd_revolver")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (6, 0, 0)
     m.cprism(FRAME, 9.0, worn_paint(RED, RED_HI, 0.3, 601), bevel=1.5, edge=0.5)
     m.cbox(0, 38, 4.0, 20, 22, fp.metal(METAL), size=0.5, edge=0.25)                     # top strap
@@ -28,6 +29,7 @@ def build():
         m.cyl(31, 34, yc, zc, 1.5, None, edge=0.25, carve=True)
         m.cyl(30.5, 31, yc, zc, 1.5, BRASS, size=0.25, edge=0.25)
     m.part = 'body'
+    m.part = 'barrel'
     # barrel with a full lug, a vented heat shield on top and a ported compensator
     m.cyl(36, 100, 0, Z_BORE, 3.2, fp.metal(METAL), edge=0.25)
     m.cbox(36, 96, 6.0, 4, Z_BORE, fp.metal(METAL_MID), bevel=1.0, edge=0.5)
@@ -39,6 +41,7 @@ def build():
     m.cyl(111, 113, 0, Z_BORE, 1.7, None, edge=0.25, carve=True)
     m.box(106, 109, -0.75, 0.75, Z_BORE + 5, Z_BORE + 8, fp.metal(METAL), size=0.25)
     m.box(106.5, 108.5, -0.5, 0.5, Z_BORE + 7, Z_BORE + 7.75, GREEN, size=0.25)
+    m.part = 'sight'
     fp.rear_sight(m, 2, 22, 2.0, fp.metal(METAL), w=4.5, notch=1.5, dots=GREEN)
     # skeleton hammer
     m.part = 'hammer'
@@ -46,8 +49,10 @@ def build():
              size=0.5, edge=0.25)
     m.cyl(-2, 2, -3, 20, 1.0, None, axis='y', carve=True, edge=0.25)
     m.part = 'body'
+    m.part = 'guard'
     fp.guard(m, 8, 28, -10, -1, fp.metal(METAL))
     fp.trigger(m, 18, -1, fp.metal(METAL_HI), length=7)
+    m.part = 'grip'
     # chunky rubber grip with finger grooves and a skull medallion
     grip = [(4, 2), (-4, 0), (-14, -18), (-16, -34), (-2, -36), (4, -28), (10, -12), (12, 0)]
     m.cprism(grip, 10.0, fp.metal(RUBBER, 0.1), bevel=2.5, edge=0.5)

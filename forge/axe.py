@@ -14,27 +14,35 @@ LENGTH = 230
 
 def build():
     m = Model("bd_axe")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (60, 0, 0)
+    m.part = 'haft'
     # the haft along x, slightly oval
     m.cyl(0, LENGTH, 0, 0, 3.4, fp.wood(HAFT, HAFT_DK), edge=0.5)
+    m.part = 'pommel'
     m.ball(-1, 0, 0, 4.2, fp.metal(METAL_HI), edge=0.25)                                   # pommel
     m.cyl(0, 3, 0, 0, 4.0, fp.metal(METAL), edge=0.25)
+    m.part = 'grip'
     for x0, x1 in ((8, 70),):                                                             # taped grip
         m.cyl(x0, x1, 0, 0, 3.7, TAPE, edge=0.25)
         for x in range(x0, x1, 3):
             m.cyl(x, x + 0.5, 0, 0, 3.9, (44, 44, 46), size=0.25, edge=0.25)
+    m.part = 'haft'
     for x in (72, 140, LENGTH - 30):
         m.cyl(x, x + 3, 0, 0, 4.0, fp.metal(METAL_HI), edge=0.25)
     # the head: a bearded blade below the haft's end, a spike above; both 3 cubes thick, tapering to the edge
     hx = LENGTH - 26
     blade = [(hx, 4), (hx + 22, 4), (hx + 22, -6), (hx + 30, -26), (hx + 32, -40), (hx + 24, -44), (hx + 10, -38),
              (hx + 2, -20), (hx, -6)]
+    m.part = 'blade'
     m.cprism(blade, 4.0, fp.metal(HEAD), bevel=1.0, edge=0.25)
     # the ground edge: a strip of bright steel along the curved front
     m.recolour(lambda x, y, z: z < -18 and x > hx + 22 - (z + 18) * 0.25 or (z < -36 and x > hx + 8),
                lambda x, y, z: mul(EDGE, 0.95 + 0.1 * hash01(int(x), int(z), 3)))
+    m.part = 'spike'
     m.cprism([(hx + 4, 4), (hx + 18, 4), (hx + 14, 22), (hx + 10, 26), (hx + 8, 22)], 3.0, fp.metal(HEAD),
              bevel=0.75, edge=0.25)                                                        # the back spike
+    m.part = 'head'
     m.cyl(hx - 2, hx + 24, 0, 0, 5.0, fp.metal(METAL_MID), edge=0.25)                      # the eye socket
     for x in (hx + 4, hx + 18):
         for side in ('+y', '-y'):
