@@ -12,6 +12,7 @@ CORE = (120, 255, 120)
 
 def build():
     m = Model("bd_bfg9000")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (70, 0, 0)
     armour(m, 0, 150, 36.0, 0, 42, worn_paint(RED, RED_HI, 0.25, 1001), bevel=5.0, panel=PANEL_DK)
     m.cbox(10, 140, 30.0, 42, 46, fp.metal(METAL), bevel=2.0, edge=0.5)
@@ -23,6 +24,7 @@ def build():
         for x in range(36, 110, 10):
             m.box(x, x + 2, 15.5 if ys > 0 else -18.5, 18.5 if ys > 0 else -15.5, 22, 32, fp.metal(METAL_HI),
                   size=0.5)
+    m.part = 'emitter'
     # the emitter: a huge collar, six fins, and a glowing green core in its mouth
     m.cyl(150, 176, 0, Z_AXIS, 18.0, fp.metal(METAL_MID), edge=0.5)
     m.cyl(170, 178, 0, Z_AXIS, 14.0, None, edge=0.5, carve=True)
@@ -36,17 +38,22 @@ def build():
             m.box(150 + t * 1.5, 178, yc - 1.5, yc + 1.5, zc - 1.5, zc + 1.5, fp.metal(METAL), size=0.5, keep=True)
     for x in (152, 160):
         m.cyl(x, x + 2, 0, Z_AXIS, 18.5, fp.metal(METAL_HI), edge=0.25)
+    m.part = 'barrels'
     # two cooling barrels under the body, vented
     for y in (-10, 10):
         m.cyl(120, 170, y, -4, 4.0, fp.metal(METAL), edge=0.25)
         for x in range(124, 168, 4):
             m.cyl(x, x + 1.5, y, -4, 5.0, fp.metal(PANEL), edge=0.25)
+    m.part = 'grip'
     # grip, guard, front handle, top rail
     m.cprism([(60, 2), (50, 0), (44, -22), (56, -24), (64, -6), (72, 2)], 12.0, fp.metal(METAL), bevel=2.0,
              edge=0.5)
+    m.part = 'guard'
     fp.guard(m, 66, 86, -10, 0, fp.metal(METAL))
     fp.trigger(m, 74, 0, fp.metal(METAL_HI), length=7)
+    m.part = 'foregrip'
     m.cprism([(110, 2), (104, -20), (114, -22), (120, 2)], 10.0, fp.metal(METAL), bevel=2.0, edge=0.5)
+    m.part = 'rail'
     for x in range(14, 138, 4):
         m.box(x, x + 1.5, -4, 4, 46, 47.5, fp.metal(METAL_HI), size=0.5)
     hazard(m, 0, 12, -20, 20, 0, 42, step=3.0)

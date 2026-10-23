@@ -13,6 +13,7 @@ TUBE = (0, 200, 9.0)
 
 def build():
     m = Model("bd_rocket_launcher")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (80, 0, 0)
     tx0, tx1, tr = TUBE
     m.cyl(tx0 + 20, tx1, 0, Z_AXIS, tr, fp.metal(METAL_MID), edge=0.5)
@@ -22,6 +23,7 @@ def build():
     m.recolour(lambda x, y, z: x > tx1 - 4 and hash01(int(x), int(z), 811) > 0.4, (20, 16, 12))                  # soot
     m.cyl(tx0, tx0 + 22, 0, Z_AXIS, tr + 1, fp.metal(METAL), r1=tr - 1, edge=0.25)           # back blast cone
     m.cyl(tx0 - 1, tx0 + 6, 0, Z_AXIS, tr - 2, None, edge=0.25, carve=True)
+    m.part = 'shroud'
     # armoured shroud over the middle, red paint, hazard band
     armour(m, 60, 150, 2 * tr + 6, Z_AXIS - tr - 2, Z_AXIS + tr + 3, worn_paint(RED, RED_HI, 0.3, 801),
            bevel=4.0)
@@ -39,11 +41,15 @@ def build():
     for x in (28, 54):
         m.cyl(x, x + 2, 0, Z_AXIS, tr + 6.5, fp.metal(METAL), edge=0.25)
     m.part = 'body'
+    m.part = 'grip'
     # grip, trigger, front grip
     m.cprism([(96, 6), (88, 4), (84, -14), (94, -16), (100, -2)], 9.0, fp.metal(METAL), bevel=2.0, edge=0.5)
+    m.part = 'guard'
     fp.guard(m, 98, 114, -6, Z_AXIS - tr - 1, fp.metal(METAL))
     fp.trigger(m, 104, Z_AXIS - tr - 1, fp.metal(METAL_HI), length=6)
+    m.part = 'foregrip'
     m.cprism([(160, 8), (154, -12), (162, -14), (168, 8)], 8.0, fp.metal(METAL), bevel=2.0, edge=0.5)
+    m.part = 'sight'
     # the box sight on the left: a housing with a green reticle at the back
     m.cbox(100, 128, 10.0, Z_AXIS + tr + 3, Z_AXIS + tr + 13, fp.metal(METAL), bevel=1.0, edge=0.5)
     m.cbox(99, 129, 6.0, Z_AXIS + tr + 5, Z_AXIS + tr + 11, None, size=0.5, carve=True)

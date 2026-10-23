@@ -12,6 +12,7 @@ TAPE = (30, 30, 30)
 
 def build():
     m = Model("bd_chainsaw")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (20, 0, 0)
     # engine: red block, fins cut across it, a grey panel over the cylinder
     armour(m, 0, 60, 24.0, -10, 24, worn_paint(RED, RED_HI, 0.3, 401), bevel=3.0, panel=None)
@@ -20,14 +21,17 @@ def build():
             m.groove([(x, 4), (x, 21)], side, depth=3, width=2, dark=0.35)
     m.cbox(40, 58, 26.0, 2, 20, fp.metal(PANEL), bevel=2.0, edge=0.5)
     hazard(m, 40, 58, -14, 14, 2, 8, step=2.0)
+    m.part = 'starter'
     m.cyl(-4, 2, 0, 6, 6.0, fp.metal(METAL), edge=0.25)                                    # starter housing
     m.cyl(-6, -4, 0, 6, 3.0, fp.metal(METAL_HI), edge=0.25)
     m.cbox(-10, -6, 6.0, 4, 8, fp.metal((200, 40, 30)), size=0.5)                           # pull handle
     m.box(-6.5, -3.5, -0.25, 0.25, 5.75, 6.25, (200, 196, 180), size=0.25)                 # and its cord
+    m.part = 'exhaust'
     # exhaust stack on the right, glowing hot at the mouth
     m.cyl(24, 34, -14, 18, 2.5, fp.metal(METAL_HI), axis='y', edge=0.25)
     m.cyl(20, 34, 29, -15, 2.4, fp.metal(METAL), axis='z', edge=0.25)
     m.cyl(33.5, 34.5, 29, -15, 1.4, ORANGE, axis='z', size=0.25, edge=0.25)
+    m.part = 'handle'
     # top handle: a tube from the back over to the front, taped
     for i in range(80):
         t = i / 79
@@ -37,10 +41,12 @@ def build():
     for i in range(18):
         x = 10 + i * 1.5
         m.box(x, x + 0.5, -2.5, 2.5, 33, 37, (60, 60, 60), size=0.25, keep=True)
+    m.part = 'front_handle'
     # front handle loop round the body
     for i in range(70):
         a = i / 69 * math.pi
         m.ball(56, math.cos(a) * 16, 6 + math.sin(a) * 26, 1.6, fp.metal(METAL_HI), edge=0.25)
+    m.part = 'bar'
     # the guide bar and its chain (the chain is its own part)
     bx0, bx1, bz0, bz1 = BAR
     m.prism([(bx0, bz0), (bx1 - 6, bz0), (bx1, (bz0 + bz1) / 2), (bx1 - 6, bz1), (bx0, bz1)], -1.0, 1.0,
@@ -66,6 +72,7 @@ def build():
             m.prism([(x, zt), (x + 1.25, zt + 0.75 * up), (x + 1.25, zt)], -1.0, 1.0, fp.metal((200, 200, 204)),
                     size=0.25)
     m.part = 'body'
+    m.part = 'clamp'
     m.cbox(56, 66, 6.0, -4, 12, fp.metal(METAL), bevel=1.0, edge=0.5)                       # bar clamp
     for side in ('+y', '-y'):
         m.bolt(60, 0, side, SCREW)
@@ -75,6 +82,7 @@ def build():
             mode='paint')
     corner_screws(m, 0, 60, -10, 24, inset=3, kind='slot')
     fp.trigger(m, 8, -10, fp.metal(CAUTION), length=6, curve=1.0)
+    m.part = 'grip'
     m.cprism([(14, -10), (6, -12), (2, -24), (12, -26), (18, -14)], 8.0, TAPE, bevel=1.5, edge=0.5)
     finish(m, 410, (0, 60, -10, 24), grime=0.3, scratches=16, cracks=3)
     return m

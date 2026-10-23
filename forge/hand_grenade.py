@@ -11,6 +11,7 @@ OLIVE_DK = (48, 54, 28)
 
 def build():
     m = Model("bd_hand_grenade")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (0, 0, 0)
     m.ball(0, 0, 0, 10.0, fp.metal(OLIVE, 0.08), rz=12.0, edge=0.5)
     # the frag segments: grooves round it in both directions
@@ -23,6 +24,7 @@ def build():
         for side in ('+y', '-y', '+x', '-x'):
             m.groove([(-12, z), (12, z)], side, depth=2, dark=0.4)
     m.recolour(lambda x, y, z: -1.5 < z < 1.5, CAUTION)
+    m.part = 'fuse'
     # the fuse head, the spoon, the ring
     m.cyl(10, 15, 0, 0, 3.6, fp.metal(METAL_HI), axis='z', edge=0.25)
     m.cyl(15, 17, 0, 0, 2.6, fp.metal(METAL_MID), axis='z', edge=0.25)

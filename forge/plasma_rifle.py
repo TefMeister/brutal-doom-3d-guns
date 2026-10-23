@@ -12,10 +12,13 @@ CELL_GLOW = (120, 230, 255)
 
 def build():
     m = Model("bd_plasma_rifle")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (60, 0, 0)
     armour(m, 20, 130, 20.0, 0, 30, fp.metal(METAL_MID), bevel=3.0, panel=PANEL)
+    m.part = 'stock'
     m.cprism([(0, 4), (0, 26), (20, 28), (20, 2)], 16.0, fp.metal(METAL), bevel=2.0, edge=0.5)    # stock block
     m.cbox(-4, 0, 16.0, 2, 28, (30, 30, 32), size=0.5)
+    m.part = 'cell'
     # the plasma cell on top: a glass tube with a glowing core, caged
     m.cbox(40, 104, 12.0, 30, 34, fp.metal(METAL), size=0.5)
     m.cyl(44, 100, 0, 38, 4.5, (40, 120, 140), edge=0.25)
@@ -24,10 +27,12 @@ def build():
         m.cyl(x, x + 1.5, 0, 38, 5.2, fp.metal(METAL_HI), edge=0.25)
     for x in (42, 100):
         m.cbox(x, x + 3, 12.0, 30, 44, fp.metal(METAL), bevel=1.0, edge=0.25)
+    m.part = 'barrel'
     # barrel shroud with fins, then the emitter with three prongs and coils
     m.cyl(130, 180, 0, Z_AXIS, 6.0, fp.metal(METAL), edge=0.25)
     for x in range(134, 178, 4):
         m.cyl(x, x + 1.5, 0, Z_AXIS, 8.0, fp.metal(PANEL_DK), edge=0.25)
+    m.part = 'emitter'
     for k in range(3):
         a = k * math.tau / 3 + math.pi / 2
         yc, zc = math.cos(a) * 6.5, Z_AXIS + math.sin(a) * 6.5
@@ -43,10 +48,13 @@ def build():
         m.box(90 + i * 3, 92 + i * 3, 7.0, 7.5, -20, -14, CYAN if i < 4 else (30, 60, 70), size=0.25)
     hazard(m, 86, 112, -8, 8, -24, -20)
     m.part = 'body'
+    m.part = 'grip'
     m.cprism([(60, 2), (52, 0), (46, -18), (56, -20), (64, -6), (70, 2)], 10.0, fp.metal(METAL), bevel=2.0,
              edge=0.5)
+    m.part = 'guard'
     fp.guard(m, 64, 82, -8, 0, fp.metal(METAL))
     fp.trigger(m, 72, 0, fp.metal(METAL_HI), length=6)
+    m.part = 'sight'
     fp.rear_sight(m, 24, 30, 3.0, fp.metal(METAL), w=6.0, notch=2.0, dots=GREEN)
     fp.sight_post(m, 124, 30, 4.0, fp.metal(METAL), w=1.5, dot=GREEN)
     vents(m, 26, 40, 6, 22, step=3.5, glow=(40, 140, 160))

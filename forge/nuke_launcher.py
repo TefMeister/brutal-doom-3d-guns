@@ -15,6 +15,7 @@ TREFOIL = [".....###.....", "....#####....", "...#######...", "#.....#.....#", "
 
 def build():
     m = Model("bd_nuke_launcher")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (80, 0, 0)
     m.cyl(0, 200, 0, Z_AXIS, 14.0, fp.rusty(OLIVE, (80, 70, 40), 0.25, seed=2701), edge=0.5)
     m.cyl(-2, 6, 0, Z_AXIS, 15.0, fp.metal(METAL), edge=0.25)
@@ -29,8 +30,10 @@ def build():
     m.recolour(lambda x, y, z: x > 226, CAUTION)
     m.cyl(202, 206, 0, Z_AXIS, 12.5, DARK, size=0.5, edge=0.25)
     m.part = 'body'
+    m.part = 'shield'
     # the blast shield, the arming dial, the targeting screen
     m.cbox(96, 100, 40.0, Z_AXIS - 10, Z_AXIS + 22, fp.metal(METAL_MID), bevel=2.0, edge=0.5)
+    m.part = 'dial'
     m.cyl(14, 18, 60, Z_AXIS + 2, 6.0, fp.metal(METAL_HI), axis='y', edge=0.25)
     m.cyl(17.5, 18, 60, Z_AXIS + 2, 5.0, (230, 226, 210), axis='y', size=0.25, edge=0.25)
     for t in range(8):
@@ -42,12 +45,15 @@ def build():
     for i in range(6):
         m.box(74 + i * 2, 75 + i * 2, 9.5, 9.75, Z_AXIS + 18 + (i % 3), Z_AXIS + 19 + (i % 3), GREEN, size=0.25)
     m.part = 'body'
+    m.part = 'grip'
     # grip, front handle, shoulder pad
     m.cprism([(80, Z_AXIS - 13), (72, Z_AXIS - 15), (66, -10), (76, -12), (84, 0), (90, Z_AXIS - 13)], 11.0,
              fp.metal(METAL), bevel=2.0, edge=0.5)
     fp.trigger(m, 94, Z_AXIS - 13, fp.metal(METAL_HI), length=7)
+    m.part = 'foregrip'
     m.cprism([(130, Z_AXIS - 13), (126, -6), (134, -8), (140, Z_AXIS - 13)], 9.0, fp.metal(METAL), bevel=1.5,
              edge=0.5)
+    m.part = 'shoulder_pad'
     m.cbox(20, 60, 16.0, Z_AXIS - 18, Z_AXIS - 12, (40, 36, 30), bevel=1.0, edge=0.25)
     for side in ('+y', '-y'):
         m.decal(TREFOIL, 104, Z_AXIS + 8, side, CAUTION, dot=2, mode='paint')

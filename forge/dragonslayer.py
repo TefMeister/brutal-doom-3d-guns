@@ -15,7 +15,9 @@ def iron(x, y, z):
 
 def build():
     m = Model("bd_dragonslayer")
+    # the pieces each have a name, so each can be picked on its own in Blender (Tefa, 2026-10-23)
     m.pivot = (40, 0, 0)
+    m.part = 'blade'
     # the blade: a thick slab, bevelled to blunt edges, its tip cut square with the corners knocked off
     blade = [(64, -16), (LENGTH - 16, -16), (LENGTH, -8), (LENGTH, 8), (LENGTH - 16, 16), (64, 16)]
     m.cprism(blade, 7.0, iron, bevel=3.0, edge=0.5)
@@ -31,14 +33,17 @@ def build():
         m.scratches(side, (70, LENGTH - 20, -14, 14), 40, 2840 if side == '+y' else 2841, length=(4, 14))
     m.recolour(lambda x, y, z: abs(z) > 13 and hash01(int(x // 2), int(z), 2803) > 0.55,
                lambda x, y, z: mix((70, 14, 10), (36, 8, 6), hash01(int(x), int(z), 2804)))
+    m.part = 'guard'
     # the guard, the grip, the pommel ring
     m.cbox(56, 66, 10.0, -24, 24, fp.metal(METAL_MID), bevel=2.0, edge=0.5)
     for side in ('+y', '-y'):
         m.bolt(61, -18, side, SCREW)
         m.bolt(61, 18, side, SCREW)
+    m.part = 'grip'
     m.cyl(-30, 56, 0, 0, 4.2, fp.wood(LEATHER, mul(LEATHER, 0.6)), edge=0.5)
     for x in range(-28, 54, 6):
         m.cyl(x, x + 1.5, 0, 0, 4.6, (40, 24, 14), edge=0.25)
+    m.part = 'pommel'
     m.cyl(-36, -30, 0, 0, 6.0, fp.metal(METAL_HI), edge=0.25)
     m.cyl(-4, 4, -42, 0, 6.0, fp.metal(METAL_HI), axis='y', hollow=3.5, edge=0.25)
     m.wear_edges(0.4, (170, 168, 164))
