@@ -4,7 +4,8 @@
 # offsets and all, on the floor, so those sprites are kept apart (2026-10-24, the forge guns going into the games).
 import re
 
-STATE = re.compile(r"\s*\"?([A-Z0-9_#]{4})\"?\s+\"?([A-Z\[\]\#^]+)\"?\s+-?\d")
+STATE = re.compile(r"\s*\"?([A-Z0-9_#]{4})\"?\s+\"?([A-Z\[\]\\#^]+)\"?\s+-?\d")
+LETTERS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]")
 LABEL = re.compile(r"\s*([A-Za-z0-9_.]+)\s*:(?!:)")
 
 
@@ -49,4 +50,5 @@ def hand_frames(source, cls, foreign=()):
     world = set().union(*([v for k, v in by.items() if k and k.lower() == "spawn"] or [set()]))
     held = set().union(*([v for k, v in by.items() if not k or k.lower() != "spawn"] or [set()]))
     drop = set(foreign) | {"####", "PLAY"}
-    return sorted(f for f in held - world if f[0] not in drop)
+    # a MODELDEF frame can only be A to Z, [, \ or ] ("Invalid frame character # found", BFG 10K, 2026-10-24)
+    return sorted(f for f in held - world if f[0] not in drop and f[1] in LETTERS)
