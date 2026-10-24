@@ -48,5 +48,10 @@ morphs, shields and the two-gun versions (they reuse the single gun).
 python ../../blender-cubekit/forge_make.py "<blend folder>" renders axe.py bfg9000.py
 ```
 
-**Still to do:** Doomguy's gloves on each gun, animations, the light and glow work, and the game export (the
-exporter cannot read forge models yet).
+**In the game (2026-10-24):** `tools/gz_forge_export.py` exports a forge gun, gloves and all, as a still model held
+in the right hand, and `tools/forge_jobs.py` names the Brutal Doom class each one stands in for and the frames it
+shows in the hand (pickups keep their sprites). All of the above but the assault rifle (its class `Rifle` already
+has the machine gun Tefa shaped) are in `gzdoom/forge-test/bd3dguns_forge_test.pk3` in the MEGA folder, loaded by
+`D:/Brutal Doom/Play Doom 1 - Brutal Doom VR (all 3D guns test).bat`.
+
+**Still to do:** animations, the light and glow work, the two-gun versions.
