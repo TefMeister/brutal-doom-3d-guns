@@ -1,41 +1,84 @@
-# Doomguy's free LEFT hand for GZDoom VR: the approved right glove from the pistol, mirrored into a true left hand, drawn
-# on the left controller while a one-handed weapon is out (2026-10-19, Tefa: "can you try to get the left hand to follow
-# left motion controller with one handed weapons in both doom and ashes 2063 ... don't change the side where the thumb
-# is").
-#   blender.exe -b <pistol .blend> --python tools/gz_left_hand.py -- <out folder>
+# Doomguy's free LEFT hand for GZDoom VR, drawn on the left controller while a one-handed weapon is out.
+#   blender.exe -b --factory-startup --python tools/gz_left_hand.py -- <out folder>
 #
-# Why a mirror is right HERE, when it was the cause of the Ashes left hand going wrong (2026-09-22/23): mirroring a hand
-# turns it into the other hand. That was the bug when a mirror was used to "move the thumb" of a hand that was already
-# left; here the start is a RIGHT hand, so its mirror IS the left hand, thumb on a left hand's side. And it is mirrored
-# across the controller's own left/right, because a left hand holds its controller as the mirror of how the right hand
-# holds the right one (thumb on top, back of the hand facing out, fingers round the handle): the two controllers share
-# the same axes, the hands do not. Nothing is rolled or turned afterwards.
-#
-# Drawn as an ordinary actor at the off hand's pose (FollowOffhand, OffhandPos/Angle/Pitch/Roll: our GZDoomVR build,
-# the same route as the Ashes lantern): MD3 x = forward, y = right, z = up, 34 map units a metre (vr_vunits_per_meter),
-# origin = the middle of the closed hand, where the controller's handle is.
-import bpy, sys, os, struct, zlib
+# ⭐ The game draws everything at the off hand (FollowOffhand, our GZDoomVR build; ashes-2063-weapons engine/README.md)
+# with left and right swapped `[verified-live 2026-10-24, n=1, Ashes]`, which is why the 2026-10-19 hand here (the
+# pistol's right glove mirrored into a left one) showed "a glove with the thumb still on the wrong side" (Tefa). Seen in
+# the Ashes hand worn three times on 2026-10-24, the swap acts on the file's up and down: a hand facing palm-in, thumb up
+# in the file showed palm-out; so the file holds the hand flipped top to bottom, and the game turns it back.
+# Tefa, 2026-10-24: "then please do the same with doom loose left hand": the same as the Ashes hand they approved, a
+# relaxed hand (not the trigger pose), palm towards the weapon, thumb on top, 3.5 cm lower and 4 cm further back than
+# the middle of the palm.
+# Built here as Doomguy's true LEFT glove (left_glove: the mirror of the approved right one, with the Slayer's mark on
+# its back plate), with all its fine detail and scratches, then flipped top to bottom on the way out; the game's swap
+# makes it the left glove again, so the mark reads the right way.
+# Hand space (bd_glove_settings): x across (+x to the right of a right hand laid palm down), y wrist -> fingertips,
+# z = back of the hand. Gun space: x forward, y the gun's LEFT, z up.
+import bpy, sys, os, struct, zlib, importlib
 from mathutils import Vector
 
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for sub in ("gloves", "shotgun", os.path.join("..", "blender-cubekit")):
+    sys.path.insert(0, os.path.abspath(os.path.join(REPO, sub)))
+import bd_glove_fine, bd_wear, bl, edit                       # noqa: E402
+from bd_glove import left_glove                               # noqa: E402
+from bd_glove_settings import VOXEL_M, COL, SHADE, NOISE, WEAR, SCRATCH_LIGHTEN, PALM_L, sc   # noqa: E402
+
 OUT = os.path.abspath(sys.argv[sys.argv.index("--") + 1])
-KIT = os.path.join(os.path.expanduser("~"), "github-backups", "ashes-2063-weapons", "kit")
+KIT = os.path.join(os.path.dirname(REPO), "ashes-2063-weapons", "kit")
 exec(open(os.path.join(KIT, "gz_md3.py")).read())
 MAX_SURFACE_VERTS = 60000          # GZDoom takes at most 32 surfaces; it indexes them in 32 bit (gz_vr_export.py)
 UNITS_PER_M = 34                    # vr_vunits_per_meter in doom-vr.ini: world actors, not the weapon's hand space
-GLOVE, ROOT = "BDP_glove_right", "BDP_Glove_Root"
 NAME = "bd_left_hand"
+OBJ = "BD_glove_free_left"
 MODEL_PATH = "models/bd3dguns/lefthand"
+# the Ashes hand's relaxed pose (ashes-2063-weapons tools/gz_left_hand.py), thumb lengths at this glove's size
+RELAXED_CURLS = {"index": (18, 30, 18), "middle": (22, 36, 22), "ring": (26, 40, 24), "pinky": (30, 44, 26)}
+RELAXED_THUMB = [(sc(14), 38, 14), (sc(12), 20, 30)]
+HAND_DOWN_CM = 3.5
+HAND_BACK_CM = 4.0
 
-sc = bpy.context.scene
-g = sc.objects[GLOVE]
-inv = sc.objects[ROOT].matrix_world.inverted()
-M = inv @ g.matrix_world
-pts = [M @ Vector(c) for c in g.bound_box]
-# the middle of the fist, front to back and top to bottom; across, the gun's middle line (Blender X 0), which is where
-# the handle runs through the hand
-cy = (min(p.y for p in pts) + max(p.y for p in pts)) / 2
-cz = (min(p.z for p in pts) + max(p.z for p in pts)) / 2
-print(f"{NAME}: fist centre Y {cy:.3f} Z {cz:.3f} (root metres)")
+
+def axes(xh, yh, zh):
+    """A left hand, fingers forward, back of the hand to the left (out), thumb (+x on a left hand) on top."""
+    return (yh, zh, xh)
+
+
+hand = left_glove(curls=RELAXED_CURLS, thumb=RELAXED_THUMB, back_top=False)   # poses are given as for the right hand
+cells = {axes(*c): n for c, n in hand.items()}
+palm = [axes(*c) for c in hand if 0 <= c[1] < PALM_L]
+O = [(min(c[i] for c in palm) + max(c[i] for c in palm) + 1) / 2.0 for i in range(3)]
+
+
+def solid(self, P):
+    """bd_glove_fine.Hand.solid for this pose: hand space (quarter cubes) -> the glove object's small-cube grid."""
+    F = bd_glove_fine.F
+    cell = tuple(p // F for p in P)
+    sub = tuple(p % F for p in P)
+    x, y, z = axes(*cell)
+    gs = axes(*sub)
+    return self.g.at(F * x + gs[0], F * y + gs[1], F * z + gs[2])
+
+
+bd_glove_fine.Hand.solid = solid
+for o in list(bpy.data.objects):
+    bpy.data.objects.remove(o)
+root = bpy.data.objects.new("BD_free_left_root", None)
+bpy.context.scene.collection.objects.link(root)
+os.makedirs(OUT, exist_ok=True)
+objs = bl.make_objects([(OBJ, {c: COL[n] for c, n in cells.items()}, (0, 0, 0))], root,
+                       os.path.join(OUT, "bd_free_left_atlas.png"), bl.Space(VOXEL_M, (0, 0, 0)), SHADE, NOISE)
+g = objs[OBJ]
+if not bl.pick_mode_check(g, VOXEL_M):
+    bl.split_to_cubes(g, VOXEL_M)
+edit.convert(g, VOXEL_M)
+bd_glove_fine.run({"left": cells}, {"left": OBJ})            # the Slayer's mark, studs, stitching, grooves
+bd_wear.carve([OBJ], WEAR, lighten=SCRATCH_LIGHTEN)
+bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "bd_free_left_hand.blend"))
+
+# the palm's middle in Blender metres (bl.Space: Blender = (-gun y, gun x, gun z) * cube)
+ox, oy, oz = O[1] * -VOXEL_M, O[0] * VOXEL_M, O[2] * VOXEL_M
+print(f"{NAME}: {len(cells)} cubes, palm middle gun ({O[0]:.1f}, {O[1]:.1f}, {O[2]:.1f})")
 
 
 def srgb(c):
@@ -47,20 +90,23 @@ dg = bpy.context.evaluated_depsgraph_get()
 eo = g.evaluated_get(dg)
 me = eo.to_mesh()
 col = me.attributes.get("cubekit_view") or me.attributes.get("cubekit_base")
+M = root.matrix_world.inverted() @ g.matrix_world
 R = M.to_3x3()
 faces = []
 for poly in me.polygons:
     c = col.data[poly.loop_start].color
     key = (srgb(c[0]), srgb(c[1]), srgb(c[2]))
     n = (R @ poly.normal).normalized()
-    nm = (n.y, -n.x, n.z)                       # mirrored (X -> -X), then MD3 (forward, right, up)
+    nm = (n.y, n.x, -n.z)                       # the guns' MD3 axes (kit gz_export: y and x swap), then top <-> bottom
     loops = list(poly.loop_indices)
     for k in range(1, len(loops) - 1):
         tri = []
-        # mirror + the axis swap into MD3 are two flips: they cancel, so the corner order stays as Blender has it
+        # the axis swap and the top/bottom flip are two flips: they cancel, so the corner order stays as Blender has it
         for li in (loops[0], loops[k], loops[k + 1]):
             p = M @ me.vertices[me.loops[li].vertex_index].co
-            tri.append((((p.y - cy) * UNITS_PER_M, -p.x * UNITS_PER_M, (p.z - cz) * UNITS_PER_M), nm))
+            tri.append((((p.y - oy) * UNITS_PER_M - HAND_BACK_CM / 100.0 * UNITS_PER_M,
+                         (p.x - ox) * UNITS_PER_M,
+                         -(p.z - oz) * UNITS_PER_M + HAND_DOWN_CM / 100.0 * UNITS_PER_M), nm))
         faces.append((tri, key))
 eo.to_mesh_clear()
 
