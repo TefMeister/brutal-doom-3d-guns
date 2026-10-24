@@ -39,3 +39,14 @@ reference picture. They live in a local reference folder on the dev PC.
 
 **Next:** the shotgun, in Blender, together, one step at a time: first bring in the Ashes 2063 shotgun with
 hands to see how the hands sit, then block out the Brutal Doom shotgun's shape beside it.
+
+## 2026-10-24 - every forge gun in the game; relaxed free left hand (home PC)
+- 25 forge guns in Brutal Doom as still models held in the right hand, gloves on (`tools/gz_forge_export.py`,
+  `tools/forge_jobs.py`, `tools/weapon_sprites.py`; forge/README.md). Flat check: all 25 drawn as 3D models when
+  selected, no errors `[verified-live 2026-10-24, n=1, flat]`. Not yet worn: placement (the right glove's middle at
+  the revolver's tuned spot) and size per gun are untested in the headset.
+- Two crashes on the way, both found and fixed: a MODELDEF frame `#` (the BFG 10K uses it in its states; GZDoom only
+  takes A to Z, [, \ and ]) `[verified-live 2026-10-24]`; and a test-only helper's long `user` string setting
+  ("User info descriptor too big"), now a `server` setting. The helper was never part of the mod.
+- Free left hand rebuilt the Ashes way (ashes-2063-weapons NOTES.md, 2026-10-24: the game swaps the off hand):
+  Doomguy's left glove relaxed, palm in, thumb on top, stored flipped top to bottom. Not worn.
