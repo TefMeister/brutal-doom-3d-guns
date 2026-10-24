@@ -2,7 +2,7 @@ version "4.10"
 // Doomguy's free left hand on the left controller while a one-handed weapon is out (brutal-doom-3d-guns,
 // tools/gz_left_hand.py, 2026-10-19). Needs our GZDoomVR build (ashes-2063-weapons/engine): OffhandValid,
 // OffhandPos / OffhandAngle / OffhandPitch / OffhandRoll, and FollowOffhand (drawn at the off hand's pose every
-// rendered frame, like the weapon). The model is the approved right glove from the pistol, mirrored into a left hand.
+// rendered frame, like the weapon). The model is the left glove, relaxed, stored flipped top to bottom: the game swaps it back (2026-10-24).
 
 class BDLeftHand : Actor
 {
