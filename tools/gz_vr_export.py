@@ -1,6 +1,8 @@
 # Put our cube guns into GZDoom VR over Brutal Doom's weapons: a first, static test build (2026-10-19).
 #   blender.exe -b <gun.blend> --python tools/gz_vr_export.py -- <gun> <out folder>
 #   gun: pistol | shotgun | machinegun
+#   add --no-hands for the gun alone (2026-10-29, Tefa: "now that the hand can actually dock on the weapon we need to
+#   re-do weapons without hands on them"): Doomguy's gloves are left out, the gun stays where it sat in them.
 #
 # Tefa 2026-10-19: "can you see if you can get DOOM 1 working in VR with the brutal doom mod and our first 3 weapons
 # in it?" Each gun is exported as it stands in its .blend (gun + Doomguy's gloves), one pose for every sprite frame
@@ -21,6 +23,7 @@ from mathutils import Vector
 
 args = sys.argv[sys.argv.index("--") + 1:]
 GUN, OUT = args[0], os.path.abspath(args[1])
+NO_HANDS = "--no-hands" in args[2:]
 KIT = os.path.join(os.path.expanduser("~"), "github-backups", "ashes-2063-weapons", "kit")
 exec(open(os.path.join(KIT, "gz_md3.py")).read())
 # GZDoom takes at most 32 surfaces per MD3 ("Invalid MD3 Surface 32", first launch 2026-10-19) and the kit splits at
@@ -55,7 +58,10 @@ def under(o, name):
     return False
 
 
-meshes = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and (under(o, ROOT) or under(o, GLOVES))]
+meshes = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render
+          and (under(o, ROOT) or (under(o, GLOVES) and not NO_HANDS))]
+if NO_HANDS:   # a glove parented under the gun's own root counts as a hand too
+    meshes = [o for o in meshes if "_glove_" not in o.name.lower()]
 meshes.sort(key=lambda o: o.name)
 
 # the grip: the middle of the right glove, in the root's space

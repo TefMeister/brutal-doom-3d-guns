@@ -1,6 +1,7 @@
 # Which forge cube gun stands in for which weapon, in Brutal Doom and in Ashes 2063, and the frames each one shows in
 # the hand: writes the jobs file tools/gz_forge_export.py reads. No Blender.
-#   python tools/forge_jobs.py doom|ashes <out jobs.json>
+#   python tools/forge_jobs.py doom|ashes <out jobs.json> [--no-hands]
+#   --no-hands (2026-10-29): every job exports the gun alone (gz_forge_export.py), for the body rig's own hands
 #
 # Tefa, 2026-10-24: "please add all the weapons you have made so far into both brutal doom and ashes 2063 games".
 # Left out on purpose: guns already in the game as models Tefa shaped and wore (Doom: pistol, shotgun, machine gun =
@@ -84,6 +85,9 @@ def ashes_jobs():
 if __name__ == "__main__":
     game, out = sys.argv[1], sys.argv[2]
     jobs = doom_jobs() if game == "doom" else ashes_jobs()
+    if "--no-hands" in sys.argv[3:]:
+        for j in jobs.values():
+            j["no_hands"] = True
     for gun, j in jobs.items():
         for c, fr in j["classes"].items():
             assert fr, f"{gun}: no hand frames found for {c}"

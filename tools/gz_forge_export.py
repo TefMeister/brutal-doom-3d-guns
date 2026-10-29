@@ -1,6 +1,11 @@
 # A forge cube gun (blender-cubekit forge, 2026-10-19) into GZDoom VR as a still model held in the right hand: one MD3,
 # one palette PNG and a MODELDEF block for every weapon class it stands in for. For Brutal Doom and Ashes 2063 alike.
-#   blender.exe -b <gun.blend> --python tools/gz_forge_export.py -- <jobs.json> <gun> <out folder>
+#   blender.exe -b <gun.blend> --python tools/gz_forge_export.py -- <jobs.json> <gun> <out folder> [--no-hands]
+#
+# --no-hands (or "no_hands": true in the job), 2026-10-29: the gun alone, its gloves left out. Tefa: "now that the hand
+# can actually dock on the weapon we need to re-do weapons without hands on them" (the Ashes body rig puts the player's
+# own hands on the gun). The gun still sits where it sat in the glove: the grip is measured from the right glove before
+# the gloves are dropped, so the docked hand lands where the glove was.
 #
 # Tefa, 2026-10-24: "please add all the weapons you have made so far into both brutal doom and ashes 2063 games, so i can
 # test them out in 3d one after another and we can do blender work after that". No animation: every frame the weapon
@@ -20,6 +25,7 @@ from mathutils import Vector
 args = sys.argv[sys.argv.index("--") + 1:]
 JOBS, GUN, OUT = args[0], args[1], os.path.abspath(args[2])
 job = json.load(open(JOBS))[GUN]
+NO_HANDS = "--no-hands" in args[3:] or bool(job.get("no_hands"))
 # the kit from the same clone root as this file (a /pd root builds with its own copy), else the modding root
 KIT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "ashes-2063-weapons", "kit"))
 if not os.path.isdir(KIT):
@@ -51,6 +57,10 @@ grip = (lo + hi) / 2
 origin = grip - GRIP_FROM_ORIGIN
 print(f"{GUN}: {len(meshes)} parts, grip from {'the right glove' if glove else 'the whole model'} "
       f"{tuple(round(v, 3) for v in grip)}")
+if NO_HANDS:
+    hands = [o for o in meshes if "_glove_" in o.name.lower()]
+    meshes = [o for o in meshes if o not in hands]
+    print(f"{GUN}: no hands, left out {', '.join(o.name for o in hands) or 'nothing (it had none)'}")
 
 images = {}
 
