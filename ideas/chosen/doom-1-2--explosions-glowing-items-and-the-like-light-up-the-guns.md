@@ -22,3 +22,5 @@ load them; adding them is the first step, then filling the gaps for Brutal Doom'
 frame rate in VR, only a run can say.
 
 ---
+
+Chosen by Tefa: 2026-10-29

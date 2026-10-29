@@ -31,3 +31,5 @@ the same kind as the swinging-strap idea.
 _Other categories appear as they arrive — gameplay, visuals, audio, VR, level design, UI, controls, enemies, performance. Nothing is missing; none of them have been needed yet._
 
 **To add one:** `[doom] your idea` — anywhere, any time.
+
+Chosen by Tefa: 2026-10-29

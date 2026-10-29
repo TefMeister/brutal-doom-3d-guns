@@ -55,3 +55,5 @@ common things in the entire Doom community. Not a reason to stop — our version
 point — but seeing what already exists is free and tells you what you like.
 
 ---
+
+Chosen by Tefa: 2026-10-29

@@ -11,3 +11,5 @@ Full entry: [`ashes-2063.md` → Darkness hides the guns](ashes-2063.md#darkness
 Verbatim record: [`inbox/2026-10-25h-guns-hide-in-darkness.md`](../inbox/2026-10-25h-guns-hide-in-darkness.md)
 
 ---
+
+Chosen by Tefa: 2026-10-29
