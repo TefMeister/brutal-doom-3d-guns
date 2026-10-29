@@ -2,6 +2,26 @@
 
 Newest first. Claims carry a tag for how well they are known; untagged means `[hypothesis]`.
 
+## 2026-10-29 - the exporters can leave the hands out (`--no-hands`)
+
+**Why** (Tefa): "now that the hand can actually dock on the weapon we need to re-do weapons without hands on them".
+The Ashes body rig places the arms and hands from the controllers, so a glove baked into a gun model is a second hand.
+
+**What changed** (dev PC, /pd): `tools/gz_forge_export.py`, `tools/gz_vr_export.py` and `tools/forge_jobs.py` take a
+`--no-hands` switch (for forge jobs also `"no_hands": true` per job). With it, every object named `*_glove_*` (and, in
+`gz_vr_export.py`, everything under the GLOVES list) is left out of the model. The grip point is still measured from
+the right glove first, so a gun with and without hands sits in exactly the same spot in the hand.
+
+**Checked** on the forge revolver with two stand-in box gloves (scratch build, not kept): with hands 122522 triangles,
+without 122498 (the 24 glove triangles); same grip both ways (0.0, -0.05, -0.04); comparing every corner of the two
+models, 72 corners exist only in the with-hands model and none only in the no-hands one, so the gun itself did not
+move or change `[verified-numerically 2026-10-29, n=1 gun]`. `gz_vr_export.py`'s switch (shotgun, pistol, machine
+gun) is `[compile-verified 2026-10-29]` only: those blends live in MEGA on the home PC. Whether their gloves are
+separate objects there (so the switch is enough) or joined into the gun mesh is not known `[hypothesis]`.
+
+**Next** (home PC, where the blends are): re-export every forge gun with `forge_jobs.py doom|ashes <jobs> --no-hands`
+and the three hand-built guns with `gz_vr_export.py <gun> <out> --no-hands`, then look at one in Blender.
+
 ## 2026-10-18 - project started
 
 **Asked for** (Tefa): 3D guns for Brutal Doom in Doom 1 and 2, a project like the Ashes 2063 weapons. Extract
