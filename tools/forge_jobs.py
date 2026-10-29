@@ -32,7 +32,10 @@ DOOM = {
 }
 
 ASHES_BLENDS = os.path.join(MEGA, "ashes-2063-weapons", "3D blender", "forge-2026-10-19")
-ASHES_SOURCE = os.path.join("C:" + os.sep, "NonSteam", "Ashes 2063 VR", "Resources", "Ashes2063Enriched2_23.pk3")
+# where Ashes is installed: the home PC first, then the dev PC
+ASHES_SOURCE = next((p for p in (os.path.join(d, "Resources", "Ashes2063Enriched2_23.pk3") for d in (
+    os.path.join("C:" + os.sep, "NonSteam", "Ashes 2063 VR"), os.path.join("D:" + os.sep, "ashes2063vr", "Ashes 2063 VR")))
+    if os.path.isfile(p)), os.path.join("C:" + os.sep, "NonSteam", "Ashes 2063 VR", "Resources", "Ashes2063Enriched2_23.pk3"))
 # forge file -> (weapon file in the pk3, classes); pumpaction2 is the shotgun's upgraded build, which had no model
 ASHES = {
     "crowbar": ("Crowbar", ["Crowbar"]), "sawed_off": ("Sawedoff", ["SawedOff"]),
@@ -44,6 +47,8 @@ ASHES = {
 # borrowed by Ashes weapons from elsewhere: the quick knife, Doom's own chaingun and shotgun frames used as blanks,
 # the 9mm's and the Ingram's frames
 ASHES_FOREIGN = {"KNIF", "CHGG", "SHTG", "NULL", "GLOK", "INGG"}
+# guns with a live scope (2026-10-29): forge part holding the glass, and the surface the scope script swaps (scope/)
+ASHES_SCOPES = {"battle_rifle": ("glass", 0)}
 
 
 def doom_jobs():
@@ -71,6 +76,8 @@ def ashes_jobs():
         jobs[gun] = {"name": "af_" + gun, "blend": os.path.join(ASHES_BLENDS, gun + ".blend"),
                      "model_path": "models/ashes2063/forge/" + gun,
                      "classes": {c: hand_frames(src, c, foreign) for c in classes}}
+        if gun in ASHES_SCOPES:
+            jobs[gun]["glass_part"], jobs[gun]["glass_surface"] = ASHES_SCOPES[gun]
     return jobs
 
 

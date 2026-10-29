@@ -32,3 +32,14 @@ engine changes. `[reported]` (its README).
   Ask the author before lifting code; the idea itself is ours to use.
 - Credits it names: Sergeant_Mark_IV (Brutal Doom), Ermac (hands, Force Unleashed pack, DoomXR), TeamBeef,
   Emawind (QuestZDoom), ijon (Dakka). The pack author's own handle is not in the README.
+
+## Later the same day: light, and which engine it needs
+
+- **His guns do not catch the game's lights.** The pack has only muzzle-flash lights (A_AttachLight) and bullet-impact
+  lights; no GLDEFS materials (no shine maps) and no lights on fires `[inferred-static 2026-10-29]`. Our shine
+  (`lights/make_shine.py`) and fire lights are the part to add to it.
+- **It is written for QuestZDoom 17.3, not our GZDoomVR.** It calls `OffhandDir(mo, angle, pitch)` as a function (in
+  its VR hand, muzzle, rounds, pose and reload scripts) and reads `player.PlayInVR`; our patched engine has `OffhandDir`
+  as a field and no `PlayInVR` `[inferred-static 2026-10-29]`. So it will most likely not load on our PC engine
+  without a small adapter. The scope part itself only needs fields both engines have.
+- Ashes got the same scope method as our own code: `ashes-2063-weapons/scope/`.
