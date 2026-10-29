@@ -43,3 +43,12 @@ engine changes. `[reported]` (its README).
   as a field and no `PlayInVR` `[inferred-static 2026-10-29]`. So it will most likely not load on our PC engine
   without a small adapter. The scope part itself only needs fields both engines have.
 - Ashes got the same scope method as our own code: `ashes-2063-weapons/scope/`.
+
+## Who made it
+
+- presidentkoopa: [RSQ_UBQSeries](https://github.com/presidentkoopa/RSQ_UBQSeries), the Radiant Silvergun Quest
+  series of stand-alone add-ons for Doom VR on the Quest (distance grab, shield-saw, lightsaber, holster rig,
+  slow motion, laser sight, grappling hook, HP bars, arcade score, minibosses, Gun Bonsai for VR). Its readme says
+  the arcade parts read what monsters do rather than their names, so they should run on Ashes too. All target
+  stock QuestZDoom 17.3. No licence file on the repo (checked 2026-10-29), so nothing of it goes into our public
+  repos until he says so.
