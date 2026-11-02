@@ -1,6 +1,6 @@
 # Which forge cube gun stands in for which weapon, in Brutal Doom and in Ashes 2063, and the frames each one shows in
 # the hand: writes the jobs file tools/gz_forge_export.py reads. No Blender.
-#   python tools/forge_jobs.py doom|ashes <out jobs.json> [--no-hands]
+#   python tools/forge_jobs.py doom|ashes|ashes-detail <out jobs.json> [--no-hands]
 #   --no-hands (2026-10-29): every job exports the gun alone (gz_forge_export.py), for the body rig's own hands
 #
 # Tefa, 2026-10-24: "please add all the weapons you have made so far into both brutal doom and ashes 2063 games".
@@ -67,6 +67,10 @@ def doom_jobs():
     return jobs
 
 
+# 2026-11-02, Tefa: Ashes guns 1.5 times bigger ("in VR they look too small").
+ASHES_GUN_SCALE = 1.5
+
+
 def ashes_jobs():
     z = zipfile.ZipFile(ASHES_SOURCE)
     jobs = {}
@@ -75,16 +79,42 @@ def ashes_jobs():
         own_ingram = gun == "machine_pistol"
         foreign = ASHES_FOREIGN - ({"INGG"} if own_ingram else set())
         jobs[gun] = {"name": "af_" + gun, "blend": os.path.join(ASHES_BLENDS, gun + ".blend"),
-                     "model_path": "models/ashes2063/forge/" + gun,
+                     "model_path": "models/ashes2063/forge/" + gun, "scale": ASHES_GUN_SCALE,
                      "classes": {c: hand_frames(src, c, foreign) for c in classes}}
         if gun in ASHES_SCOPES:
             jobs[gun]["glass_part"], jobs[gun]["glass_surface"] = ASHES_SCOPES[gun]
     return jobs
 
 
+
+# The DETAILED Ashes guns (2026-11-02, ashes-2063-weapons/forge/detail/): gun only, blends in forge-2026-11-02, the same
+# classes as the first pass, plus the guns whose first models were hand-shaped (revolver ...). Only guns whose detailed
+# .blend exists are listed, so the set grows as they are built.
+ASHES_DETAIL_BLENDS = os.path.join(MEGA, "ashes-2063-weapons", "3D blender", "forge-2026-11-02")
+ASHES_DETAIL_EXTRA = {"revolver": ("Revolver", ["Revolver"]), "handgun": ("Glock", ["Glock"]),
+                      "pump_shotgun": ("Shotgun", ["pumpaction", "pumpaction2"])}
+
+
+def ashes_detail_jobs():
+    z = zipfile.ZipFile(ASHES_SOURCE)
+    table = dict(ASHES, **ASHES_DETAIL_EXTRA)
+    jobs = {}
+    for gun, (wfile, classes) in table.items():
+        blend = os.path.join(ASHES_DETAIL_BLENDS, gun + ".blend")
+        if not os.path.exists(blend):
+            continue
+        src = z.read(f"Actors/Weapons/{wfile}.txt").decode("latin-1")
+        foreign = ASHES_FOREIGN - ({"INGG"} if gun == "machine_pistol" else set()) - ({"GLOK"} if gun == "handgun" else set())
+        jobs[gun] = {"name": "ad_" + gun, "blend": blend, "model_path": "models/ashes2063/detail/" + gun,
+                     "scale": ASHES_GUN_SCALE, "no_hands": True,
+                     "classes": {c: hand_frames(src, c, foreign) for c in classes}}
+        if gun in ASHES_SCOPES:
+            jobs[gun]["glass_part"], jobs[gun]["glass_surface"] = ASHES_SCOPES[gun]
+    return jobs
+
 if __name__ == "__main__":
     game, out = sys.argv[1], sys.argv[2]
-    jobs = doom_jobs() if game == "doom" else ashes_jobs()
+    jobs = doom_jobs() if game == "doom" else ashes_detail_jobs() if game == "ashes-detail" else ashes_jobs()
     if "--no-hands" in sys.argv[3:]:
         for j in jobs.values():
             j["no_hands"] = True

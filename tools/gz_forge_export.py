@@ -32,6 +32,9 @@ if not os.path.isdir(KIT):
     KIT = os.path.join(os.path.expanduser("~"), "github-backups", "ashes-2063-weapons", "kit")
 exec(open(os.path.join(KIT, "gz_md3.py")).read())
 UNITS_PER_M = 100
+# 2026-11-02 (Tefa, Ashes): "guns need to be about 1.5 times as big as they are at the moment, in VR they look too small".
+# The job's "scale" (forge_jobs.py: 1.5 for Ashes, 1.0 for Doom) grows the gun around its grip, so the hand stays put.
+GUN_SCALE = float(job.get("scale", 1.0))
 GRIP_FROM_ORIGIN = Vector((0.0, 0.20, -0.16))
 MAX_SURFACES = 32                  # GZDoom refuses an MD3 with more ("Invalid MD3 Surface 32", 2026-10-19)
 NAME = job["name"]
@@ -49,13 +52,15 @@ inv = root.matrix_world.inverted()
 meshes = sorted((o for o in sc.objects if o.type == 'MESH' and not o.hide_render), key=lambda o: o.name)
 
 glove = [o for o in meshes if o.name.endswith("glove_right")]
-grip_objs = glove or meshes        # no hand on it (the pipe bomb): the middle of the whole thing
+# no glove (the 2026-11-02 detailed Ashes guns are built gun-only): the middle of the part named "grip", where the
+# glove used to wrap; nothing like it (the pipe bomb): the middle of the whole thing
+grip_objs = glove or [o for o in meshes if o.name == root.name[:-len("_root")] + "_grip"] or meshes
 pts = [inv @ (o.matrix_world @ Vector(c)) for o in grip_objs for c in o.bound_box]
 lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
 hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
 grip = (lo + hi) / 2
 origin = grip - GRIP_FROM_ORIGIN
-print(f"{GUN}: {len(meshes)} parts, grip from {'the right glove' if glove else 'the whole model'} "
+print(f"{GUN}: {len(meshes)} parts, grip from {'the right glove' if glove else grip_objs[0].name if len(grip_objs) == 1 else 'the whole model'} "
       f"{tuple(round(v, 3) for v in grip)}")
 if NO_HANDS:
     hands = [o for o in meshes if "_glove_" in o.name.lower()]
@@ -162,7 +167,8 @@ with open(os.path.join(OUT, png), "wb") as f:
 # MD3 axes as every gun in both games: x forward, y right, z up (GZDoom draws MD3 +Y on the viewer's right), so
 # Blender (x right, y forward) -> (y, x, z): a mirror, hence the corner order reversed (as gz_vr_export.py)
 O = np.array(tuple(origin))
-Q = (P - O) * UNITS_PER_M
+G = np.array(tuple(grip))
+Q = ((P - G) * GUN_SCALE + (G - O)) * UNITS_PER_M
 Q = Q.reshape(ntri, 3, 3)[:, [0, 2, 1], :].reshape(-1, 3)[:, [1, 0, 2]]
 Nm = N.reshape(ntri, 3, 3)[:, [0, 2, 1], :].reshape(-1, 3)[:, [1, 0, 2]]
 u = (inverse % side + 0.5) / side

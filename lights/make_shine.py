@@ -17,6 +17,10 @@ from PIL import Image
 
 GLOSSINESS = 3.0
 SPECULAR_LEVEL = 3.0        # the 2026-10-08 probe used 1.5; Tefa asked for at least twice as strong
+# 2026-11-02, Tefa (Ashes): "reduce the light reflection that light sources reflect from weapons 2.5x ... a faint reflection
+# is a good starting point". --level N overrides (Ashes passes 1.2 = 3.0 / 2.5); Doom keeps 3.0 until asked.
+if "--level" in sys.argv:
+    i = sys.argv.index("--level"); SPECULAR_LEVEL = float(sys.argv[i + 1]); del sys.argv[i:i + 2]
 METAL_SAT = 0.18            # above this colour saturation a texel is not metal
 NON_METAL = 0.25            # how much a coloured texel still shines
 
