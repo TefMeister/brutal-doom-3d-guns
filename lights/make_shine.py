@@ -21,6 +21,24 @@ SPECULAR_LEVEL = 3.0        # the 2026-10-08 probe used 1.5; Tefa asked for at l
 # is a good starting point". --level N overrides (Ashes passes 1.2 = 3.0 / 2.5); Doom keeps 3.0 until asked.
 if "--level" in sys.argv:
     i = sys.argv.index("--level"); SPECULAR_LEVEL = float(sys.argv[i + 1]); del sys.argv[i:i + 2]
+# 2026-11-02, Tefa (Ashes): "the lighting feels, glassy, shiny insted of the weapon reacting to the light in a more subtle
+# natural way ... this shine is worse than having no shine at all". The map and the flat normal map made every surface
+# shine the same, like glass. --vary: each texel shines a random 35-100% of its share, darker (grime, soot) texels less;
+# --bumpy T: each texel of the normal map is tilted by up to T (tangent units), so the light breaks up across the
+# cubes instead of sliding over them. Both off unless asked (Doom unchanged).
+VARY = "--vary" in sys.argv
+if VARY: sys.argv.remove("--vary")
+BUMPY = 0.0
+if "--bumpy" in sys.argv:
+    i = sys.argv.index("--bumpy"); BUMPY = float(sys.argv[i + 1]); del sys.argv[i:i + 2]
+
+
+def _rand(x, y, k):   # the same "random" number for the same texel every time (0..1)
+    h = (x * 73856093) ^ (y * 19349663) ^ (k * 83492791)
+    h = (h ^ (h >> 13)) * 1274126177 & 0xFFFFFFFF
+    return (h & 0xFFFF) / 65535.0
+
+
 METAL_SAT = 0.18            # above this colour saturation a texel is not metal
 NON_METAL = 0.25            # how much a coloured texel still shines
 
@@ -37,7 +55,10 @@ for arg in sys.argv[2:]:
             hi, lo = max(r, g, b), min(r, g, b)
             sat = (hi - lo) / hi if hi else 0.0
             metal = max(0.0, min(1.0, 1.0 - sat / METAL_SAT))
-            v = int(round(255 * (NON_METAL + (1.0 - NON_METAL) * metal)))
+            share = NON_METAL + (1.0 - NON_METAL) * metal
+            if VARY:   # grime and soot shine less; and every texel a little differently
+                share *= (0.35 + 0.65 * _rand(x, y, 1)) * (0.5 + 0.5 * min(1.0, hi / 70.0))
+            v = int(round(255 * share))
             sp[x, y] = (v, v, v)
     base = os.path.splitext(game_path)[0]
     stem = base.split("/")[-1]
@@ -45,7 +66,15 @@ for arg in sys.argv[2:]:
     norm_path = f"models/shine/{stem}_norm.png"
     os.makedirs(os.path.join(out, "models", "shine"), exist_ok=True)
     spec.save(os.path.join(out, spec_path))
-    Image.new("RGB", skin.size, (128, 128, 255)).save(os.path.join(out, norm_path))
+    norm = Image.new("RGB", skin.size, (128, 128, 255))
+    if BUMPY > 0:
+        npx = norm.load()
+        for y in range(skin.size[1]):
+            for x in range(skin.size[0]):
+                tx, ty = (2 * _rand(x, y, 2) - 1) * BUMPY, (2 * _rand(x, y, 3) - 1) * BUMPY
+                n = (tx * tx + ty * ty + 1.0) ** 0.5
+                npx[x, y] = tuple(int(round((c / n * 0.5 + 0.5) * 255)) for c in (tx, ty, 1.0))
+    norm.save(os.path.join(out, norm_path))
     lines += ["", f'material texture "{game_path}"', "{", f'    normal "{norm_path}"', f'    specular "{spec_path}"',
               f"    glossiness {GLOSSINESS}", f"    specularlevel {SPECULAR_LEVEL}", "}"]
     print(f"{game_path}: {skin.size[0]}x{skin.size[1]}, shine map written")
