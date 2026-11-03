@@ -73,6 +73,17 @@ if NO_HANDS:
     meshes = [o for o in meshes if o not in hands]
     print(f"{GUN}: no hands, left out {', '.join(o.name for o in hands) or 'nothing (it had none)'}")
 
+# Only some parts (2026-11-03, the cube sprite shotgun): "parts" keeps just these, "skip_parts" leaves these out, AFTER
+# the grip is measured, so two exports of one gun (the still body, the moving pump) line up as one.
+def part_of(o):
+    return o.get("part") or (o.name[len(root.name) - 4:] if o.name.startswith(root.name[:-4]) else o.name)
+
+
+if job.get("parts"):
+    meshes = [o for o in meshes if part_of(o) in job["parts"]]
+if job.get("skip_parts"):
+    meshes = [o for o in meshes if part_of(o) not in job["skip_parts"]]
+
 images = {}
 
 
@@ -138,7 +149,7 @@ for o in meshes:
     glass = GLASS is not None and o.name.endswith("_" + GLASS)
     for lst, v in zip(G_all if glass else (P_all, N_all, C_all), (P, np.repeat(nrm[tp], 3, axis=0), rgb)):
         lst.append(v)
-    (GPART_all if glass else PART_all).append([o.get("part", o.name)] * nt)
+    (GPART_all if glass else PART_all).append([part_of(o)] * nt)
     print(f"  {o.name}: {nt} triangles ({how})")
     eo.to_mesh_clear()
 assert GLASS is None or G_all[0], f"{GUN}: no part named '{GLASS}' for the scope glass"
