@@ -49,6 +49,10 @@ MODEL_PATH = job["model_path"]
 # show pose 0. Parts move rigidly; without "poses" the gun is the one still frame, as before.
 POSES = job.get("poses") or [{}]
 FRAME_POSE = job.get("frame_pose", {})
+# Parts that only show in some frames (2026-11-04, the sharp cube shotgun: muzzle flashes and the shells of the reload):
+# "hidden_parts" lists them; a hidden part is drawn only in the poses that name it (with its offset), and in every
+# other pose all its corners sit on one point, so it draws nothing.
+HIDDEN = set(job.get("hidden_parts", []))
 
 sc = bpy.context.scene
 roots = [o for o in sc.objects if o.type == 'EMPTY' and o.name.endswith("_root")]
@@ -158,6 +162,7 @@ P = np.concatenate(G_all[0] + P_all); N = np.concatenate(G_all[1] + N_all); C = 
 ntri = len(C)
 PART = np.array(sum(GPART_all + PART_all, []))
 assert all(k in set(PART.tolist()) for pose in POSES for k in pose), f"{GUN}: a pose names a part the gun does not have"
+assert HIDDEN <= set(PART.tolist()), f"{GUN}: hidden parts the gun does not have: {HIDDEN - set(PART.tolist())}"
 
 # the palette: one pixel per colour
 keys, inverse = np.unique(C, axis=0, return_inverse=True)
@@ -195,6 +200,8 @@ def md3_corners(pose):
     for part, d in pose.items():
         off[PART == part] = d
     Pp = P + np.repeat(off, 3, axis=0)
+    for part in HIDDEN - set(pose):
+        Pp[np.repeat(PART == part, 3)] = G
     q = ((Pp - G) * GUN_SCALE + (G - O)) * UNITS_PER_M
     return q.reshape(ntri, 3, 3)[:, [0, 2, 1], :].reshape(-1, 3)[:, [1, 0, 2]]
 
