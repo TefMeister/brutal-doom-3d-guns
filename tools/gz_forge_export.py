@@ -45,7 +45,8 @@ GLASS_TINT = (60, 90, 110)
 MODEL_PATH = job["model_path"]
 # Moving parts (2026-11-03, the sprite-faced Ashes shotgun; Tefa: "can you also already animate it to the games
 # animations?"). Optional: "poses" is a list of {part: [dx, dy, dz] metres in the root's space}, one MD3 frame each
-# (pose 0 is the rest pose and should be {}), and "frame_pose" maps "SPRITE LETTER" to a pose; frames it leaves out
+# (pose 0 is the rest pose and should be {}; a part may carry 7 numbers to turn on a hinge, see md3_corners), and
+# "frame_pose" maps "SPRITE LETTER" to a pose; frames it leaves out
 # show pose 0. Parts move rigidly; without "poses" the gun is the one still frame, as before.
 POSES = job.get("poses") or [{}]
 FRAME_POSE = job.get("frame_pose", {})
@@ -199,10 +200,23 @@ G = np.array(tuple(grip))
 
 def md3_corners(pose):
     off = np.zeros((ntri, 3))
+    turns = []
     for part, d in pose.items():
         if part != "*":
-            off[PART == part] = d
-    Pp = P + np.repeat(off, 3, axis=0)
+            off[PART == part] = d[:3]
+            if len(d) == 7:
+                turns.append((part, d[3], np.array(d[4:7])))
+    Pp = P.copy()
+    # a part may also turn on a hinge (2026-11-04, the sharp sawn-off's barrels breaking open): [dx, dy, dz, degrees
+    # nose up, hinge x, y, z], turned round the left-right axis through the hinge first, then moved
+    for part, deg, hinge in turns:
+        sel = np.repeat(PART == part, 3)
+        a = np.radians(deg)
+        rel = Pp[sel] - hinge
+        y, z = rel[:, 1].copy(), rel[:, 2].copy()
+        rel[:, 1], rel[:, 2] = y * np.cos(a) - z * np.sin(a), y * np.sin(a) + z * np.cos(a)
+        Pp[sel] = rel + hinge
+    Pp = Pp + np.repeat(off, 3, axis=0)
     for part in HIDDEN - set(pose):
         Pp[np.repeat(PART == part, 3)] = G
     if "*" in pose:
