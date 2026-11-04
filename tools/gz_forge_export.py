@@ -204,17 +204,21 @@ def md3_corners(pose):
     for part, d in pose.items():
         if part != "*":
             off[PART == part] = d[:3]
-            if len(d) == 7:
-                turns.append((part, d[3], np.array(d[4:7])))
+            if len(d) >= 7:
+                turns.append((part, d[3], np.array(d[4:7]), int(d[7]) if len(d) > 7 else 0))
     Pp = P.copy()
-    # a part may also turn on a hinge (2026-11-04, the sharp sawn-off's barrels breaking open): [dx, dy, dz, degrees
-    # nose up, hinge x, y, z], turned round the left-right axis through the hinge first, then moved
-    for part, deg, hinge in turns:
+    # a part may also turn on a hinge (2026-11-04, the sharp sawn-off's barrels breaking open): [dx, dy, dz, degrees,
+    # hinge x, y, z] turns it round the left-right axis (positive: nose up) through the hinge, then moves it; an eighth
+    # number picks the blend axis instead (0 x, 1 y = along the barrel, 2 z = up; the revolver's cylinder swings on y),
+    # turning as Blender's Matrix.Rotation does
+    for part, deg, hinge, axis in turns:
         sel = np.repeat(PART == part, 3)
         a = np.radians(deg)
+        c, s_ = np.cos(a), np.sin(a)
         rel = Pp[sel] - hinge
-        y, z = rel[:, 1].copy(), rel[:, 2].copy()
-        rel[:, 1], rel[:, 2] = y * np.cos(a) - z * np.sin(a), y * np.sin(a) + z * np.cos(a)
+        i, j = ((1, 2), (2, 0), (0, 1))[axis]
+        u, v = rel[:, i].copy(), rel[:, j].copy()
+        rel[:, i], rel[:, j] = u * c - v * s_, u * s_ + v * c
         Pp[sel] = rel + hinge
     Pp = Pp + np.repeat(off, 3, axis=0)
     for part in HIDDEN - set(pose):
