@@ -53,6 +53,8 @@ FRAME_POSE = job.get("frame_pose", {})
 # "hidden_parts" lists them; a hidden part is drawn only in the poses that name it (with its offset), and in every
 # other pose all its corners sit on one point, so it draws nothing.
 HIDDEN = set(job.get("hidden_parts", []))
+# A pose may also carry "*": [metres back, degrees nose up]: the whole model kicks round the grip (same day). Every
+# model of one gun gets the same "*" in the same frames, so they kick together.
 
 sc = bpy.context.scene
 roots = [o for o in sc.objects if o.type == 'EMPTY' and o.name.endswith("_root")]
@@ -161,7 +163,7 @@ n_glass = sum(len(c) for c in G_all[2])
 P = np.concatenate(G_all[0] + P_all); N = np.concatenate(G_all[1] + N_all); C = np.concatenate(G_all[2] + C_all)
 ntri = len(C)
 PART = np.array(sum(GPART_all + PART_all, []))
-assert all(k in set(PART.tolist()) for pose in POSES for k in pose), f"{GUN}: a pose names a part the gun does not have"
+assert all(k in set(PART.tolist()) for pose in POSES for k in pose if k != "*"), f"{GUN}: a pose names a part the gun does not have"
 assert HIDDEN <= set(PART.tolist()), f"{GUN}: hidden parts the gun does not have: {HIDDEN - set(PART.tolist())}"
 
 # the palette: one pixel per colour
@@ -198,10 +200,19 @@ G = np.array(tuple(grip))
 def md3_corners(pose):
     off = np.zeros((ntri, 3))
     for part, d in pose.items():
-        off[PART == part] = d
+        if part != "*":
+            off[PART == part] = d
     Pp = P + np.repeat(off, 3, axis=0)
     for part in HIDDEN - set(pose):
         Pp[np.repeat(PART == part, 3)] = G
+    if "*" in pose:
+        # the whole gun's kick (2026-11-04, the sharp cube shotgun): [metres back, degrees nose up] round the hand
+        back, pitch = pose["*"]
+        a = np.radians(pitch)
+        rel = Pp - G
+        y, z = rel[:, 1].copy(), rel[:, 2].copy()
+        rel[:, 1], rel[:, 2] = y * np.cos(a) - z * np.sin(a), y * np.sin(a) + z * np.cos(a)
+        Pp = rel + G + np.array([0.0, -back, 0.0])
     q = ((Pp - G) * GUN_SCALE + (G - O)) * UNITS_PER_M
     return q.reshape(ntri, 3, 3)[:, [0, 2, 1], :].reshape(-1, 3)[:, [1, 0, 2]]
 
